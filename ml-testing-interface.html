@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ML Model Testing Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            padding: 30px;
+        }
+        
+        .input-section, .output-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 25px;
+        }
+        
+        .section-title {
+            font-size: 1.5rem;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #3498db;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #34495e;
+        }
+        
+        .form-group input, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus, .form-group select:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+        
+        .btn {
+            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+            width: 100%;
+        }
+        
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+        
+        .btn:active {
+            transform: translateY(0);
+        }
+        
+        .results {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #3498db;
+        }
+        
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .result-item:last-child {
+            border-bottom: none;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+        
+        .result-value {
+            font-weight: 500;
+            color: #27ae60;
+        }
+        
+        .result-value.negative {
+            color: #e74c3c;
+        }
+        
+        .result-value.neutral {
+            color: #f39c12;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+            background: white;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        
+        .comparison-table th, .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ecf0f1;
+        }
+        
+        .comparison-table th {
+            background: #34495e;
+            color: white;
+            font-weight: 600;
+        }
+        
+        .comparison-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-success { background: #27ae60; }
+        .status-error { background: #e74c3c; }
+        .status-warning { background: #f39c12; }
+        
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #7f8c8d;
+        }
+        
+        .error {
+            background: #fee;
+            color: #c0392b;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #e74c3c;
+            margin-top: 20px;
+        }
+        
+        .success {
+            background: #efe;
+            color: #27ae60;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #27ae60;
+            margin-top: 20px;
+        }
+        
+        .quick-test-buttons {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        .quick-test-btn {
+            background: #ecf0f1;
+            border: 2px solid #bdc3c7;
+            padding: 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 0.9rem;
+        }
+        
+        .quick-test-btn:hover {
+            background: #3498db;
+            color: white;
+            border-color: #3498db;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🤖 ML Model Testing Interface</h1>
+            <p>Test and compare XGBoost Market Price Predictions</p>
+        </div>
+        
+        <div class="content">
+            <div class="input-section">
+                <h2 class="section-title">📊 Input Parameters</h2>
+                
+                                 <div class="quick-test-buttons">
+                     <button class="quick-test-btn" onclick="loadTestData('wheat-patiala')">Wheat in Patiala</button>
+                     <button class="quick-test-btn" onclick="loadTestData('potato-patiala')">Potato in Patiala</button>
+                     <button class="quick-test-btn" onclick="loadTestData('tomato-patiala')">Tomato in Patiala</button>
+                     <button class="quick-test-btn" onclick="loadTestData('banana-patiala')">Banana in Patiala</button>
+                 </div>
+                
+                <form id="mlForm">
+                                         <div class="form-group">
+                         <label for="crop">Crop Type (Any):</label>
+                         <input type="text" id="crop" name="crop" placeholder="e.g., Wheat, Rice, Maize, Cotton, Potato, Tomato..." required>
+                         <small style="color: #666; font-size: 0.9rem;">Enter any crop name - will be matched with Data.gov.in API</small>
+                     </div>
+                     
+                                          <div class="form-group">
+                         <label for="district">District:</label>
+                         <input type="text" id="district" name="district" placeholder="e.g., Patiala, Amritsar, Ludhiana..." required>
+                         <small style="color: #666; font-size: 0.9rem;">Enter district name for precise location matching</small>
+                     </div>
+                     
+                     <div class="form-group">
+                         <label for="market">Market (Mandi):</label>
+                         <input type="text" id="market" name="market" placeholder="e.g., Rajpura, Ghanaur, Amritsar Mandi..." required>
+                         <small style="color: #666; font-size: 0.9rem;">Enter specific market/mandi name</small>
+                     </div>
+                     
+                     <div class="form-group">
+                         <label for="state">State:</label>
+                         <input type="text" id="state" name="state" placeholder="e.g., Punjab, Haryana, Uttar Pradesh..." required>
+                         <small style="color: #666; font-size: 0.9rem;">Enter state name for API filtering</small>
+                     </div>
+                    
+                    <div class="form-group">
+                        <label for="currentDate">Current Date:</label>
+                        <input type="date" id="currentDate" name="currentDate" required>
+                    </div>
+                    
+                    <button type="submit" class="btn">🚀 Run ML Prediction</button>
+                </form>
+                
+                <div id="status" style="margin-top: 20px;"></div>
+            </div>
+            
+            <div class="output-section">
+                <h2 class="section-title">📈 Prediction Results</h2>
+                
+                <div id="results" style="display: none;">
+                                         <div class="results">
+                         <div class="result-item">
+                             <span class="result-label">Current Price:</span>
+                             <span class="result-value" id="currentPrice">-</span>
+                         </div>
+                         <div class="result-item">
+                             <span class="result-label">Next Day Price:</span>
+                             <span class="result-value" id="nextDayPrice">-</span>
+                         </div>
+                         <div class="result-item">
+                             <span class="result-label">Next Week Price:</span>
+                             <span class="result-value" id="nextWeekPrice">-</span>
+                         </div>
+                         <div class="result-item">
+                             <span class="result-label">Next Month Price:</span>
+                             <span class="result-value" id="nextMonthPrice">-</span>
+                         </div>
+                        <div class="result-item">
+                            <span class="result-label">Price Trend:</span>
+                            <span class="result-value" id="priceTrend">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Price Change %:</span>
+                            <span class="result-value" id="priceChange">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Risk Level:</span>
+                            <span class="result-value" id="riskLevel">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Model Accuracy:</span>
+                            <span class="result-value" id="modelAccuracy">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Confidence:</span>
+                            <span class="result-value" id="confidence">-</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Action:</span>
+                            <span class="result-value" id="action">-</span>
+                        </div>
+                    </div>
+                    
+                                         <div style="margin-top: 20px;">
+                         <h3>📋 Detailed Analysis</h3>
+                         <div id="reasoning" style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px;"></div>
+                     </div>
+                     
+                                           <div id="realPriceData" style="margin-top: 20px; display: none;">
+                          <h3>📊 Real Market Data</h3>
+                          <div style="background: #e8f5e8; padding: 15px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #27ae60;">
+                              <div id="realPriceInfo"></div>
+                          </div>
+                      </div>
+                      
+                                      <div id="apiDetails" style="margin-top: 20px; display: none;">
+                    <h3>🔗 API Call Details</h3>
+                    <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #0066cc;">
+                        <div id="apiInfo"></div>
+                    </div>
+                </div>
+                
+                <div id="nearbyMandis" style="margin-top: 20px; display: none;">
+                    <h3>🏪 Nearby Mandi Prices</h3>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 10px; border-left: 4px solid #28a745;">
+                        <div id="nearbyMandiInfo"></div>
+                    </div>
+                </div>
+                    
+                    <div style="margin-top: 20px;">
+                        <h3>📊 Model Performance</h3>
+                        <table class="comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>Metric</th>
+                                    <th>Value</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>R² Score</td>
+                                    <td id="r2Score">-</td>
+                                </tr>
+                                <tr>
+                                    <td>MAE (Mean Absolute Error)</td>
+                                    <td id="mae">-</td>
+                                </tr>
+                                <tr>
+                                    <td>RMSE (Root Mean Square Error)</td>
+                                    <td id="rmse">-</td>
+                                </tr>
+                                <tr>
+                                    <td>MAPE (Mean Absolute Percentage Error)</td>
+                                    <td id="mape">-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div id="loading" class="loading" style="display: none;">
+                    <p>🔄 Running ML prediction...</p>
+                </div>
+                
+                <div id="error" class="error" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Set default date to today
+        document.getElementById('currentDate').value = new Date().toISOString().split('T')[0];
+        
+                 // Test data presets based on real Data.gov.in data
+         const testData = {
+             'wheat-patiala': {
+                 crop: 'Wheat',
+                 district: 'Patiala',
+                 market: 'Rajpura',
+                 state: 'Punjab',
+                 currentDate: new Date().toISOString().split('T')[0]
+             },
+             'potato-patiala': {
+                 crop: 'Potato',
+                 district: 'Patiala',
+                 market: 'Ghanaur',
+                 state: 'Punjab',
+                 currentDate: new Date().toISOString().split('T')[0]
+             },
+             'tomato-patiala': {
+                 crop: 'Tomato',
+                 district: 'Patiala',
+                 market: 'Rajpura',
+                 state: 'Punjab',
+                 currentDate: new Date().toISOString().split('T')[0]
+             },
+             'banana-patiala': {
+                 crop: 'Banana',
+                 district: 'Patiala',
+                 market: 'Rajpura',
+                 state: 'Punjab',
+                 currentDate: new Date().toISOString().split('T')[0]
+             }
+         };
+        
+                 function loadTestData(type) {
+             const data = testData[type];
+             document.getElementById('crop').value = data.crop;
+             document.getElementById('district').value = data.district;
+             document.getElementById('market').value = data.market;
+             document.getElementById('state').value = data.state;
+             document.getElementById('currentDate').value = data.currentDate;
+         }
+        
+        document.getElementById('mlForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+                         const formData = new FormData(e.target);
+             const crop = formData.get('crop');
+             const district = formData.get('district');
+             const market = formData.get('market');
+             const state = formData.get('state');
+             const currentDate = formData.get('currentDate');
+             
+             // Get real current price from Data.gov.in API (Primary API)
+             let currentPrice = null;
+             let realPriceData = null;
+             
+             try {
+                 console.log('Fetching current price from Primary API (Data.gov.in)...');
+                 // Primary API: Current date prices for Punjab markets
+                 const primaryApiUrl = `https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key=579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b&format=json&limit=100&filters[commodity]=${crop}&filters[state.keyword]=${state}&filters[district]=${district}&filters[market]=${market}`;
+                 
+                 const primaryResponse = await fetch(primaryApiUrl);
+                 
+                 if (primaryResponse.ok) {
+                     const primaryResult = await primaryResponse.json();
+                     if (primaryResult.records && primaryResult.records.length > 0) {
+                         const relevantRecords = primaryResult.records.filter(record => 
+                             record.commodity?.toLowerCase().includes(crop.toLowerCase()) &&
+                             record.district?.toLowerCase().includes(district.toLowerCase()) &&
+                             record.market?.toLowerCase().includes(market.toLowerCase())
+                         );
+                         
+                         if (relevantRecords.length > 0) {
+                             const sortedRecords = relevantRecords.sort((a, b) => 
+                                 new Date(b.arrival_date.split('/').reverse().join('-')).getTime() - 
+                                 new Date(a.arrival_date.split('/').reverse().join('-')).getTime()
+                             );
+                             
+                             const latestRecord = sortedRecords[0];
+                             currentPrice = parseFloat(latestRecord.modal_price) || parseFloat(latestRecord.max_price) || parseFloat(latestRecord.min_price);
+                             realPriceData = latestRecord;
+                             
+                             console.log('Primary API - Real price found:', currentPrice);
+                         }
+                     }
+                 }
+                 
+                 // If primary API fails, try secondary API (historic + current data)
+                 if (!currentPrice) {
+                     console.log('Primary API failed, trying Secondary API...');
+                     const secondaryApiUrl = `https://api.data.gov.in/resource/35985678-0d79-46b4-9ed6-6f13308a1d24?api-key=579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b&format=json&limit=100&filters[commodity]=${crop}&filters[state]=${state}&filters[district]=${district}`;
+                     
+                     const secondaryResponse = await fetch(secondaryApiUrl);
+                     
+                     if (secondaryResponse.ok) {
+                         const secondaryResult = await secondaryResponse.json();
+                         if (secondaryResult.records && secondaryResult.records.length > 0) {
+                             const relevantRecords = secondaryResult.records.filter(record => 
+                                 record.commodity?.toLowerCase().includes(crop.toLowerCase()) &&
+                                 record.district?.toLowerCase().includes(district.toLowerCase())
+                             );
+                             
+                             if (relevantRecords.length > 0) {
+                                 const sortedRecords = relevantRecords.sort((a, b) => 
+                                     new Date(b.date).getTime() - new Date(a.date).getTime()
+                                 );
+                                 
+                                 const latestRecord = sortedRecords[0];
+                                 currentPrice = parseFloat(latestRecord.modal_price) || parseFloat(latestRecord.max_price) || parseFloat(latestRecord.min_price);
+                                 realPriceData = { ...latestRecord, source: 'Secondary API' };
+                                 
+                                 console.log('Secondary API - Real price found:', currentPrice);
+                             }
+                         }
+                     }
+                 }
+                 
+                                   // No fallback - only use real data
+                  if (!currentPrice) {
+                      console.log('No real price data found - cannot proceed without real market data');
+                      throw new Error('No real market data available for this crop/market combination. Please try a different crop or market.');
+                  }
+                 
+                           } catch (error) {
+                  console.log('API error:', error);
+                  throw new Error(`Failed to fetch real market data: ${error.message}`);
+              }
+            
+                         const data = {
+                 crop,
+                 mandi: market, // Use market as mandi for ML API
+                 state,
+                 currentPrice,
+                 currentDate
+             };
+            
+            // Show loading
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('results').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('status').innerHTML = '<div class="success"><span class="status-indicator status-success"></span>Submitting prediction request...</div>';
+            
+            try {
+                const response = await fetch('http://localhost:5000/predict', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data)
+                });
+                
+                const result = await response.json();
+                
+                if (response.ok) {
+                    displayResults(result, data);
+                    document.getElementById('status').innerHTML = '<div class="success"><span class="status-indicator status-success"></span>Prediction successful!</div>';
+                } else {
+                    throw new Error(result.error || 'Prediction failed');
+                }
+                
+            } catch (error) {
+                console.error('Error:', error);
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').innerHTML = `<strong>Error:</strong> ${error.message}`;
+                document.getElementById('status').innerHTML = '<div class="error"><span class="status-indicator status-error"></span>Prediction failed</div>';
+            } finally {
+                document.getElementById('loading').style.display = 'none';
+            }
+        });
+        
+        function displayResults(result, inputData) {
+            // Calculate price change percentage
+            const priceChange = ((result.nextDayPrice - inputData.currentPrice) / inputData.currentPrice * 100);
+            const priceChangeClass = priceChange > 0 ? '' : priceChange < 0 ? 'negative' : 'neutral';
+            
+                         // Show real price indicator if available
+             if (realPriceData) {
+                 document.getElementById('status').innerHTML = `
+                     <div class="success">
+                         <span class="status-indicator status-success"></span>
+                         Real price data used from Data.gov.in API (${realPriceData.arrival_date})
+                     </div>
+                 `;
+                 
+                 // Display real price data
+                 document.getElementById('realPriceData').style.display = 'block';
+                 document.getElementById('realPriceInfo').innerHTML = `
+                     <strong>Market:</strong> ${realPriceData.market}, ${realPriceData.district}, ${realPriceData.state}<br>
+                     <strong>Commodity:</strong> ${realPriceData.commodity} (${realPriceData.variety}, ${realPriceData.grade})<br>
+                     <strong>Date:</strong> ${realPriceData.arrival_date}<br>
+                     <strong>Price Range:</strong> ₹${realPriceData.min_price} - ₹${realPriceData.max_price}<br>
+                     <strong>Modal Price:</strong> ₹${realPriceData.modal_price}<br>
+                     <strong>Source:</strong> <span style="color: #27ae60; font-weight: bold;">${realPriceData.source || 'Data.gov.in API'}</span>
+                 `;
+             } else {
+                 document.getElementById('realPriceData').style.display = 'none';
+             }
+             
+             // Display API call details
+             document.getElementById('apiDetails').style.display = 'block';
+             document.getElementById('apiInfo').innerHTML = `
+                 <strong>Primary API Call:</strong><br>
+                 <code style="background: #f5f5f5; padding: 2px 4px; border-radius: 3px; font-size: 0.9em;">
+                     curl -X GET 'https://api.data.gov.in/resource/9ef84268-d588-465a-a308-a864a43d0070?api-key=579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b&format=json&limit=100&filters[commodity]=${crop}&filters[state.keyword]=${state}&filters[district]=${district}&filters[market]=${market}'
+                 </code><br><br>
+                 <strong>Secondary API Call:</strong><br>
+                 <code style="background: #f5f5f5; padding: 2px 4px; border-radius: 3px; font-size: 0.9em;">
+                     curl -X GET 'https://api.data.gov.in/resource/35985678-0d79-46b4-9ed6-6f13308a1d24?api-key=579b464db66ec23bdd000001cdd3946e44ce4aad7209ff7b23ac571b&format=json&limit=100&filters[commodity]=${crop}&filters[state]=${state}&filters[district]=${district}'
+                 </code><br><br>
+                 <strong>ML API Call:</strong><br>
+                 <code style="background: #f5f5f5; padding: 2px 4px; border-radius: 3px; font-size: 0.9em;">
+                     curl -X POST 'http://localhost:5000/predict' -H 'Content-Type: application/json' -d '{"crop":"${crop}","mandi":"${market}","state":"${state}","currentPrice":${currentPrice},"currentDate":"${currentDate}"}'
+                 </code><br><br>
+                 <strong>Current Price Source:</strong> <span style="color: #0066cc; font-weight: bold;">${realPriceData ? realPriceData.source || 'Data.gov.in API' : 'No real data available'}</span>
+             `;
+            
+                         // Update results
+             document.getElementById('currentPrice').textContent = `₹${inputData.currentPrice.toFixed(2)}`;
+             document.getElementById('nextDayPrice').textContent = `₹${result.nextDayPrice.toFixed(2)}`;
+             document.getElementById('nextWeekPrice').textContent = `₹${result.nextWeekPrice.toFixed(2)}`;
+             document.getElementById('nextMonthPrice').textContent = `₹${result.nextMonthPrice.toFixed(2)}`;
+            document.getElementById('priceTrend').textContent = result.priceTrend.charAt(0).toUpperCase() + result.priceTrend.slice(1);
+            document.getElementById('priceChange').textContent = `${priceChange > 0 ? '+' : ''}${priceChange.toFixed(2)}%`;
+            document.getElementById('priceChange').className = `result-value ${priceChangeClass}`;
+            document.getElementById('riskLevel').textContent = result.riskLevel.charAt(0).toUpperCase() + result.riskLevel.slice(1);
+            document.getElementById('modelAccuracy').textContent = result.modelAccuracy;
+            document.getElementById('confidence').textContent = `${(result.predictionConfidence * 100).toFixed(1)}%`;
+            document.getElementById('action').textContent = result.action.replace('_', ' ').toUpperCase();
+            
+            // Update reasoning
+            document.getElementById('reasoning').innerHTML = `<strong>Analysis:</strong> ${result.reasoning}`;
+            
+            // Fetch and display nearby mandi data
+            fetchNearbyMandis(crop, district, market, state, inputData.currentPrice);
+            
+            // Update model performance
+            document.getElementById('r2Score').textContent = result.modelAccuracy;
+            document.getElementById('mae').textContent = `₹${result.mae.toFixed(2)}`;
+            document.getElementById('rmse').textContent = `₹${result.rmse.toFixed(2)}`;
+            document.getElementById('mape').textContent = `${result.mape.toFixed(2)}%`;
+            
+            // Show results
+            document.getElementById('results').style.display = 'block';
+        }
+        
+        // Function to fetch nearby mandi data
+        async function fetchNearbyMandis(crop, district, market, state, currentPrice) {
+            try {
+                const nearbyResponse = await fetch('/api/nearby-mandis', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        crop: crop,
+                        location: `${district},${market},${state}`,
+                        currentPrice: currentPrice
+                    })
+                });
+                
+                if (nearbyResponse.ok) {
+                    const nearbyData = await nearbyResponse.json();
+                    if (nearbyData.length > 0) {
+                        document.getElementById('nearbyMandis').style.display = 'block';
+                        document.getElementById('nearbyMandiInfo').innerHTML = `
+                            <table style="width: 100%; border-collapse: collapse; margin-top: 10px;">
+                                <thead>
+                                    <tr style="border-bottom: 1px solid #dee2e6;">
+                                        <th style="text-align: left; padding: 8px; font-weight: bold;">Mandi</th>
+                                        <th style="text-align: left; padding: 8px; font-weight: bold;">Distance</th>
+                                        <th style="text-align: left; padding: 8px; font-weight: bold;">Price</th>
+                                        <th style="text-align: left; padding: 8px; font-weight: bold;">Difference</th>
+                                        <th style="text-align: left; padding: 8px; font-weight: bold;">Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${nearbyData.map(mandi => `
+                                        <tr style="border-bottom: 1px solid #f1f3f4;">
+                                            <td style="padding: 8px; font-weight: 500;">${mandi.mandi}</td>
+                                            <td style="padding: 8px;">${mandi.distance}</td>
+                                            <td style="padding: 8px; font-weight: 600; color: ${mandi.difference > 0 ? '#28a745' : mandi.difference < 0 ? '#dc3545' : '#6c757d'};">₹${mandi.price.toLocaleString()}</td>
+                                            <td style="padding: 8px; color: ${mandi.difference > 0 ? '#28a745' : mandi.difference < 0 ? '#dc3545' : '#6c757d'};">${mandi.difference > 0 ? '+' : ''}₹${mandi.difference.toFixed(0)}</td>
+                                            <td style="padding: 8px; font-size: 0.9em; color: #6c757d;">${mandi.date}</td>
+                                        </tr>
+                                    `).join('')}
+                                </tbody>
+                            </table>
+                            <p style="margin-top: 10px; font-size: 0.9em; color: #28a745;">
+                                <strong>Source:</strong> Real-time data from Data.gov.in API • 
+                                <strong>Last Updated:</strong> ${nearbyData[0]?.date || 'N/A'}
+                            </p>
+                        `;
+                    } else {
+                        document.getElementById('nearbyMandis').style.display = 'none';
+                    }
+                } else {
+                    document.getElementById('nearbyMandis').style.display = 'none';
+                }
+            } catch (nearbyError) {
+                console.log('Nearby mandi data not available:', nearbyError);
+                document.getElementById('nearbyMandis').style.display = 'none';
+            }
+        }
+
+        // Test API connection on page load
+        window.addEventListener('load', async function() {
+            try {
+                const response = await fetch('http://localhost:5000/health');
+                const health = await response.json();
+                
+                if (response.ok && health.model_loaded) {
+                    document.getElementById('status').innerHTML = `
+                        <div class="success">
+                            <span class="status-indicator status-success"></span>
+                            ML API Connected! Model: ${health.model_version} (${health.model_accuracy} accuracy)
+                        </div>
+                    `;
+                } else {
+                    document.getElementById('status').innerHTML = `
+                        <div class="error">
+                            <span class="status-indicator status-error"></span>
+                            ML API not available. Please start the Flask backend.
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                document.getElementById('status').innerHTML = `
+                    <div class="error">
+                        <span class="status-indicator status-error"></span>
+                        Cannot connect to ML API. Please ensure the Flask backend is running on port 5000.
+                    </div>
+                `;
+            }
+        });
+    </script>
+</body>
+</html>

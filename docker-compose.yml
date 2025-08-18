@@ -1,0 +1,35 @@
+
+services:
+  app:
+    build: .
+    container_name: agri-next
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_LLAMAFILE_BASE_URL: http://llama:8080
+      NEXT_PUBLIC_LLAMAFILE_MODEL: ${NEXT_PUBLIC_LLAMAFILE_MODEL:-tinyllama}
+      NEXT_PUBLIC_OPENWEATHER_API_KEY: ${NEXT_PUBLIC_OPENWEATHER_API_KEY}
+      NEXT_PUBLIC_DATA_GOV_API_KEY: ${NEXT_PUBLIC_DATA_GOV_API_KEY}
+      NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
+    depends_on:
+      - llama
+      - mlapi
+  llama:
+    image: ghcr.io/ggerganov/llama.cpp:server
+    container_name: llamafile-server
+    command: ["--host","0.0.0.0","--port","8080","--model","/models/llama-2-7b-chat.Q4_K_M.gguf","--alias","llama2-7b-chat"]
+    volumes:
+      - ./models:/models
+    ports:
+      - "8080:8080"
+  mlapi:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: agri-mlapi
+    ports:
+      - "5000:5000"
+    environment:
+      - PYTHONUNBUFFERED=1
+
