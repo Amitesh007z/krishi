@@ -4,9 +4,45 @@
 
 Built for **Capital One Hackathon** - Exploring and Building Agentic AI Solutions for Agriculture
 
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-Online-green?style=for-the-badge)](https://krishiai-latest.onrender.com)
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?logo=next.js)](https://nextjs.org/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.2-blue?logo=typescript)](https://www.typescriptlang.org/)
+[![Docker](https://img.shields.io/badge/Docker-Ready-blue?logo=docker)](https://www.docker.com/)
+
+## 🌐 **Live Application**
+
+**🎉 Your KrishiAI application is now live and accessible to everyone!**
+
+**🔗 Live URL**: [https://krishiai-latest.onrender.com](https://krishiai-latest.onrender.com)
+
+**✅ Status**: Deployed and Running on Render
+
+---
+
+## 📋 Table of Contents
+
+- [🎯 Project Overview](#-project-overview)
+- [🚀 Key Features](#-key-features)
+- [🏗️ Technical Architecture](#️-technical-architecture)
+- [📊 Data Sources](#-data-sources)
+- [🚀 Quick Start](#-quick-start)
+- [🌐 Live Deployment](#-live-deployment)
+- [🎯 Usage Guide](#-usage-guide)
+- [🌍 Punjab Focus](#-punjab-focus)
+- [🔧 API Integration](#-api-integration)
+- [🤝 Contributing](#-contributing)
+- [📄 License](#-license)
+
 ## 🎯 **Project Overview**
 
 KrishiAI is a comprehensive, real-time agricultural intelligence system specifically designed for **Punjab State, India**. It integrates live data from government APIs, weather services, and agricultural databases to provide farmers with data-driven insights for better decision-making.
+
+### **Core Components**
+- **Frontend**: Next.js 14 with TypeScript and Tailwind CSS
+- **Backend**: Python Flask API with ML models
+- **AI Engine**: Local LLM integration with Llama.cpp
+- **Database**: Supabase for real-time data
+- **Containerization**: Docker and Docker Compose
 
 ## 🚀 **Key Features**
 
@@ -40,31 +76,7 @@ KrishiAI is a comprehensive, real-time agricultural intelligence system specific
 - **Risk Assessment** and mitigation strategies
 - **Confidence Scoring** for all recommendations
 
-### **6. Crop Calendar & Planning**
-- **Punjab Agricultural Seasons** (Kharif, Rabi, Zaid) with detailed timelines
-- **Crop-specific Sowing & Harvesting** schedules
-- **Seasonal Recommendations** and risk alerts
-- **Optimal Growing Conditions** for each crop
-
-### **7. Financial Calculator & Analysis**
-- **Comprehensive Cost Breakdown** (seeds, fertilizers, labor, etc.)
-- **Profit Margin Calculations** with real-time market data
-- **Break-even Analysis** and ROI projections
-- **Price Scenario Modeling** (optimistic, pessimistic, current)
-
-### **8. Supply Chain Tracker**
-- **End-to-end Tracking** from farm to market
-- **Real-time Status Updates** for each stage
-- **Contact Information** for all stakeholders
-- **Progress Monitoring** with estimated timelines
-
-### **9. Price Alerts System**
-- **Custom Price Thresholds** for any crop
-- **Real-time Notifications** when targets are met
-- **Alert Management** with enable/disable controls
-- **Alert Statistics** and trigger history
-
-### **10. Voice-First Interface**
+### **6. Voice-First Interface**
 - **Multi-language Support** (English, Hindi, Punjabi)
 - **Voice Commands** for hands-free operation
 - **Natural Language Processing** for intuitive interaction
@@ -72,24 +84,31 @@ KrishiAI is a comprehensive, real-time agricultural intelligence system specific
 
 ## 🏗️ **Technical Architecture**
 
-### **Frontend**
-- **Next.js 14** with TypeScript
+### **Frontend Stack**
+- **Next.js 14** with App Router
 - **React 18** with modern hooks
+- **TypeScript** for type safety
 - **Tailwind CSS** for responsive design
 - **Framer Motion** for smooth animations
 - **Chart.js** for data visualization
 
-### **Backend & APIs**
-- **Real Government APIs** (data.gov.in)
-- **OpenWeather API** for weather data
-- **Punjab State Data** integration
-- **Real-time Data Fetching** with error handling
+### **Backend Stack**
+- **Python Flask** API server
+- **XGBoost** ML models for price prediction
+- **Pandas & NumPy** for data processing
+- **Scikit-learn** for ML utilities
 
-### **AI & Analytics**
+### **AI & ML Components**
+- **Local LLM**: Llama.cpp server with Llama-2-7B model
 - **Custom AI Engine** for agricultural recommendations
 - **Real-time Data Processing** and analysis
 - **Machine Learning Models** for price forecasting
-- **Risk Assessment Algorithms**
+
+### **Infrastructure**
+- **Docker** containerization
+- **Docker Compose** for multi-service orchestration
+- **Supabase** for database and authentication
+- **Real-time APIs** integration
 
 ## 📊 **Data Sources**
 
@@ -107,14 +126,15 @@ KrishiAI is a comprehensive, real-time agricultural intelligence system specific
 - **Seasonal Patterns** for major crops
 - **Market Dynamics** and price trends
 
-## 🚀 **Getting Started**
+## 🚀 **Quick Start**
 
 ### **Prerequisites**
 - Node.js 18+ 
-- npm or yarn
+- Python 3.8+
+- Docker and Docker Compose
 - Valid API keys for external services
 
-### **Installation**
+### **Local Development Setup**
 
 1. **Clone the repository**
 ```bash
@@ -132,13 +152,17 @@ npm install
 cp env.example .env
 ```
 
-4. **Add your API keys**
+4. **Add your API keys to `.env`**
 ```env
 # Get your free API key from: https://openweathermap.org/api
 NEXT_PUBLIC_OPENWEATHER_API_KEY=YOUR_OPENWEATHER_API_KEY_HERE
 
 # Get your API key from: https://data.gov.in/
 NEXT_PUBLIC_DATA_GOV_API_KEY=YOUR_DATA_GOV_API_KEY_HERE
+
+# Supabase configuration
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
 5. **Run the development server**
@@ -149,6 +173,37 @@ npm run dev
 6. **Open your browser**
 Navigate to [http://localhost:3000](http://localhost:3000)
 
+## 🌐 **Live Deployment**
+
+### **🎉 Successfully Deployed on Render!**
+
+Your KrishiAI application is now live and accessible to users worldwide at:
+
+**🔗 Live URL**: [https://krishiai-latest.onrender.com](https://krishiai-latest.onrender.com)
+
+### **Deployment Details**
+- **Platform**: Render (Web Service)
+- **Container**: Docker-based deployment
+- **Status**: ✅ Active and Running
+- **Performance**: Optimized for production use
+
+### **Access Your Application**
+1. **Visit**: [https://krishiai-latest.onrender.com](https://krishiai-latest.onrender.com)
+2. **Test all features** including voice assistant
+3. **Share the URL** with farmers and stakeholders
+4. **Monitor usage** through Render dashboard
+
+### **Environment Variables (Production)**
+The following environment variables are configured in production:
+```env
+NODE_ENV=production
+PORT=3000
+NEXT_PUBLIC_OPENWEATHER_API_KEY=configured
+NEXT_PUBLIC_DATA_GOV_API_KEY=configured
+NEXT_PUBLIC_SUPABASE_URL=configured
+NEXT_PUBLIC_SUPABASE_ANON_KEY=configured
+```
+
 ## 🎯 **Usage Guide**
 
 ### **1. Enter Your Details**
@@ -156,25 +211,19 @@ Navigate to [http://localhost:3000](http://localhost:3000)
 - **Crop**: Select from major Punjab crops (Wheat, Rice, Cotton, Sugarcane, Pulses, Maize)
 - **Quantity**: Enter your crop quantity in tons
 
-### **2. Navigate Through Tabs**
+### **2. Navigate Through Features**
 - **Market Intelligence**: Live prices, trends, and forecasts
 - **Storage Optimization**: Warehouse availability and costs
 - **Cooperative Selling**: Group selling opportunities
 - **Weather & Climate**: Real-time weather insights
 - **AI Insights**: Comprehensive AI recommendations
-- **Crop Calendar**: Seasonal planning and timelines
-- **Financial Calculator**: Profit analysis and cost optimization
-- **Supply Chain**: End-to-end tracking from farm to market
+- **Voice Interface**: Multi-language voice commands
 
 ### **3. Voice Commands**
 - **"Show market prices"** - Switch to market tab
 - **"Show storage options"** - Switch to storage tab
-- **"Show cooperative selling"** - Switch to cooperative tab
 - **"Show weather forecast"** - Switch to weather tab
 - **"Show AI insights"** - Switch to AI insights tab
-- **"Show crop calendar"** - Switch to crop calendar tab
-- **"Show financial calculator"** - Switch to financial calculator tab
-- **"Show supply chain"** - Switch to supply chain tracker tab
 
 ## 🌍 **Punjab Focus**
 
@@ -242,7 +291,10 @@ MIT License - Built for educational and hackathon purposes
 - **Government of India** for open data APIs
 - **OpenWeather** for weather data services
 - **Punjab State** for agricultural data and insights
+- **Render** for hosting and deployment services
 
 ---
 
-**Built with ❤️ for Indian Agriculture** 🇮🇳
+**🌾 Built with ❤️ for Indian Agriculture** 🇮🇳
+
+**🚀 Live at**: [https://krishiai-latest.onrender.com](https://krishiai-latest.onrender.com)
