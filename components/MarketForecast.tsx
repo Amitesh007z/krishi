@@ -12,7 +12,8 @@ import {
   CheckCircle,
   Clock,
   BarChart3,
-  Target
+  Target,
+  Brain
 } from 'lucide-react'
 import PriceChart from './PriceChart'
 import { getAIRecommendations, getMLMarketPrediction, getMLMarketPredictionWithRealPrices, getMLModelPerformance, getNearbyMandiPrices, checkMLAPIHealth } from '@/lib/api'
@@ -204,31 +205,31 @@ const MarketForecast = ({ crop, location, quantity, triggerFetchKey }: MarketFor
             // Generate insights based on ML prediction
             const newInsights: MarketInsight[] = [
               {
-                type: prediction.action === 'sell_now' ? 'positive' : 'neutral',
-                message: prediction.reasoning || 'ML prediction available',
+                type: (prediction?.action === 'sell_now') ? 'positive' : 'neutral',
+                message: prediction?.reasoning || 'ML prediction available',
                 impact: 'High'
               },
               {
                 type: 'neutral',
-                message: `ML Confidence: ${((prediction.predictionConfidence || 0) * 100).toFixed(0)}%`,
+                message: `ML Confidence: ${((prediction?.predictionConfidence || 0) * 100).toFixed(0)}%`,
                 impact: 'High'
               },
               {
-                type: (prediction.priceTrend || 'stable') === 'rising' ? 'positive' : 'negative',
-                message: `${(prediction.priceTrend ?? 'stable').toString().toUpperCase()} trend detected (strength: ${((prediction.trendStrength ?? 0) * 100).toFixed(0)}%)`,
+                type: (prediction?.priceTrend || 'stable') === 'rising' ? 'positive' : 'negative',
+                message: `${(prediction?.priceTrend ?? 'stable').toString().toUpperCase()} trend detected (strength: ${((prediction?.trendStrength ?? 0) * 100).toFixed(0)}%)`,
                 impact: 'Medium'
               }
             ]
             
             setInsights(newInsights)
-            setRecommendation(prediction.reasoning || 'ML prediction suggests optimal selling strategy')
+            setRecommendation(prediction?.reasoning || 'ML prediction suggests optimal selling strategy')
             
             // Create price chart data from ML prediction
             const priceChartData = [
               { date: new Date().toISOString().split('T')[0], price: mlCurrentPrice, confidence: 95, volume: 1500 },
-              { date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], price: prediction.nextDayPrice || 0, confidence: 90, volume: 1600 },
-              { date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], price: prediction.nextWeekPrice || 0, confidence: 85, volume: 1700 },
-              { date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], price: prediction.nextMonthPrice || 0, confidence: 80, volume: 1800 }
+              { date: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString().split('T')[0], price: prediction?.nextDayPrice || 0, confidence: 90, volume: 1600 },
+              { date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], price: prediction?.nextWeekPrice || 0, confidence: 85, volume: 1700 },
+              { date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], price: prediction?.nextMonthPrice || 0, confidence: 80, volume: 1800 }
             ]
             setPriceData(priceChartData)
             
@@ -249,19 +250,19 @@ const MarketForecast = ({ crop, location, quantity, triggerFetchKey }: MarketFor
           // Generate insights based on AI recommendation
           const newInsights: MarketInsight[] = [
             {
-              type: aiRecommendation.action === 'sell_now' ? 'positive' : 'neutral',
-              message: aiRecommendation.reasoning,
+              type: (aiRecommendation?.action === 'sell_now') ? 'positive' : 'neutral',
+              message: aiRecommendation?.reasoning || 'AI recommendation available',
               impact: 'High'
             },
             {
               type: 'neutral',
-              message: `Confidence: ${(aiRecommendation.confidence * 100).toFixed(0)}%`,
+              message: `Confidence: ${((aiRecommendation?.confidence || 0) * 100).toFixed(0)}%`,
               impact: 'Medium'
             }
           ]
           
           setInsights(newInsights)
-          setRecommendation(aiRecommendation.reasoning)
+          setRecommendation(aiRecommendation?.reasoning || 'AI recommendation available')
             
             // Create basic price chart data
             const priceChartData = [
@@ -509,77 +510,77 @@ const MarketForecast = ({ crop, location, quantity, triggerFetchKey }: MarketFor
                 <div className="mb-4 p-3 bg-white rounded-lg border border-primary-100">
                   <div className="flex items-center space-x-2 mb-2">
                     <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full font-medium">
-                      ML Model v{mlPrediction.modelVersion || '1.0'}
+                      ML Model v{mlPrediction?.modelVersion || '1.0'}
                     </span>
                     <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full font-medium">
-                      {mlPrediction.modelAccuracy || '85'}% accuracy
+                      {mlPrediction?.modelAccuracy || '85'}% accuracy
                     </span>
                   </div>
                   
-                                     <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
-                     <div>
-                       <span className="text-primary-800">Current:</span>
-                      <p className="text-primary-700 font-semibold">₹{mlPrediction.realCurrentPrice || mlPrediction.currentPrice || currentPrice}</p>
-                       {mlPrediction.realPriceData && (
-                         <p className="text-xs text-gray-500 mt-1">
-                           Source: {mlPrediction.realPriceData.source}
-                         </p>
-                       )}
-                     </div>
+                  <div className="grid grid-cols-2 md:grid-cols-5 gap-3 text-sm">
+                    <div>
+                      <span className="text-primary-800">Current:</span>
+                      <p className="text-primary-700 font-semibold">₹{mlPrediction?.realCurrentPrice || mlPrediction?.currentPrice || currentPrice}</p>
+                      {mlPrediction?.realPriceData && (
+                        <p className="text-xs text-gray-500 mt-1">
+                          Source: {mlPrediction?.realPriceData?.source}
+                        </p>
+                      )}
+                    </div>
                     <div>
                       <span className="text-primary-800">Next Day:</span>
-                      <p className="text-primary-700 font-semibold">₹{mlPrediction.nextDayPrice || 'N/A'}</p>
+                      <p className="text-primary-700 font-semibold">₹{mlPrediction?.nextDayPrice || 'N/A'}</p>
                     </div>
                     <div>
                       <span className="text-primary-800">Next Week:</span>
-                      <p className="text-primary-700 font-semibold">₹{mlPrediction.nextWeekPrice || 'N/A'}</p>
+                      <p className="text-primary-700 font-semibold">₹{mlPrediction?.nextWeekPrice || 'N/A'}</p>
                     </div>
                     <div>
                       <span className="text-primary-800">Next Month:</span>
-                      <p className="text-primary-700 font-semibold">₹{mlPrediction.nextMonthPrice || 'N/A'}</p>
+                      <p className="text-primary-700 font-semibold">₹{mlPrediction?.nextMonthPrice || 'N/A'}</p>
                     </div>
                     <div>
                       <span className="text-primary-800">Risk Level:</span>
                       <p className={`font-semibold ${
-                        (mlPrediction.riskLevel || 'unknown') === 'low' ? 'text-green-600' :
-                        (mlPrediction.riskLevel || 'unknown') === 'medium' ? 'text-yellow-600' : 'text-red-600'
+                        (mlPrediction?.riskLevel || 'unknown') === 'low' ? 'text-green-600' :
+                        (mlPrediction?.riskLevel || 'unknown') === 'medium' ? 'text-yellow-600' : 'text-red-600'
                       }`}>
-                        {(mlPrediction.riskLevel || 'unknown').toString().toUpperCase()}
+                        {(mlPrediction?.riskLevel || 'unknown').toString().toUpperCase()}
                       </p>
                     </div>
                   </div>
                   
                   {/* Additional ML Insights */}
-                  {mlPrediction.marketInsights && (
+                  {mlPrediction?.marketInsights && (
                     <div className="mt-3 p-3 bg-gray-50 rounded-lg">
                       <h5 className="text-sm font-medium text-gray-800 mb-2">Market Insights</h5>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
                         <div>
                           <span className="text-gray-600">Price Trend:</span>
-                          <p className="font-medium">{mlPrediction.marketInsights.priceTrend > 0 ? '↗️ Rising' : mlPrediction.marketInsights.priceTrend < 0 ? '↘️ Falling' : '→ Stable'}</p>
+                          <p className="font-medium">{mlPrediction?.marketInsights?.priceTrend > 0 ? '↗️ Rising' : mlPrediction?.marketInsights?.priceTrend < 0 ? '↘️ Falling' : '→ Stable'}</p>
                         </div>
                         <div>
                           <span className="text-gray-600">Volatility:</span>
-                          <p className="font-medium">{mlPrediction.marketInsights.volatility}%</p>
+                          <p className="font-medium">{mlPrediction?.marketInsights?.volatility}%</p>
                         </div>
                         <div>
                           <span className="text-gray-600">Seasonal Factor:</span>
-                          <p className="font-medium">{mlPrediction.marketInsights.seasonalFactor}%</p>
+                          <p className="font-medium">{mlPrediction?.marketInsights?.seasonalFactor}%</p>
                         </div>
                         <div>
                           <span className="text-gray-600">Weather Factor:</span>
-                          <p className="font-medium">{mlPrediction.marketInsights.weatherFactor}%</p>
+                          <p className="font-medium">{mlPrediction?.marketInsights?.weatherFactor}%</p>
                         </div>
                       </div>
                     </div>
                   )}
                   
                   {/* Risk Factors */}
-                  {mlPrediction.riskFactors && mlPrediction.riskFactors.length > 0 && (
+                  {mlPrediction?.riskFactors && mlPrediction?.riskFactors?.length > 0 && (
                     <div className="mt-3 p-3 bg-red-50 rounded-lg">
                       <h5 className="text-sm font-medium text-red-800 mb-2">Risk Factors</h5>
                       <ul className="text-xs text-red-700 space-y-1">
-                        {mlPrediction.riskFactors.map((factor, index) => (
+                        {mlPrediction?.riskFactors?.map((factor, index) => (
                           <li key={index} className="flex items-center">
                             <span className="w-2 h-2 bg-red-500 rounded-full mr-2"></span>
                             {factor}
@@ -590,10 +591,10 @@ const MarketForecast = ({ crop, location, quantity, triggerFetchKey }: MarketFor
                   )}
                   
                   {/* Expected Gain */}
-                  {mlPrediction.expectedGain && (
+                  {mlPrediction?.expectedGain && (
                     <div className="mt-3 p-3 bg-green-50 rounded-lg">
                       <h5 className="text-sm font-medium text-green-800 mb-2">Expected Gain</h5>
-                      <p className="text-lg font-bold text-green-700">₹{mlPrediction.expectedGain.toLocaleString()}</p>
+                      <p className="text-lg font-bold text-green-700">₹{mlPrediction?.expectedGain?.toLocaleString()}</p>
                       <p className="text-xs text-green-600">Based on current market analysis</p>
                     </div>
                   )}
