@@ -10,6 +10,7 @@
    - `app.py` (Flask application)
    - `requirements.txt` (Python dependencies)
    - `runtime.txt` (Python version specification)
+   - `build.sh` (build script)
    - `models/` directory with all .pkl files
 
 2. **IMPORTANT**: Verify model files exist locally:
@@ -40,7 +41,10 @@
 
 4. **Build & Deploy Settings**
    - **Build Command**: `chmod +x build.sh && ./build.sh`
-   - **Start Command**: `gunicorn app:app --bind 0.0.0.0:$PORT`
+   - **Start Command**: Choose one of these options:
+     - **Option 1**: `gunicorn app:app --bind 0.0.0.0:$PORT`
+     - **Option 2**: `python -m gunicorn app:app --bind 0.0.0.0:$PORT`
+     - **Option 3**: `$HOME/.local/bin/gunicorn app:app --bind 0.0.0.0:$PORT`
 
 5. **Environment Variables** (Optional)
    - `FLASK_ENV`: `production`
@@ -86,22 +90,28 @@ const response = await fetch(`${ML_BACKEND_URL}/predict`, {
 
 ### Common Issues:
 
-1. **Model Loading Failed**
+1. **Gunicorn Not Found** ✅ **FIXED**
+   - ✅ Updated build script to verify gunicorn installation
+   - ✅ Added fallback gunicorn installation
+   - ✅ Multiple start command options provided
+   - Try different start commands if one fails
+
+2. **Model Loading Failed**
    - Check if all .pkl files are in the models/ directory
    - Verify file paths in app.py
    - Check Render logs for Python errors
 
-2. **Build Fails**
+3. **Build Fails**
    - Check requirements.txt for compatibility
    - Ensure Python version is compatible (3.11)
    - Check for missing dependencies
 
-3. **Service Unavailable**
+4. **Service Unavailable**
    - Check Render logs for errors
    - Verify health check endpoint works
    - Look for Python import errors
 
-4. **CORS Issues**
+5. **CORS Issues**
    - Ensure CORS is properly configured in app.py
    - Check if frontend URL is allowed
 
@@ -110,6 +120,13 @@ const response = await fetch(`${ML_BACKEND_URL}/predict`, {
 - Click "Logs" tab
 - Check for any Python errors
 - Look for import or file not found errors
+- Look for gunicorn-related errors
+
+### Gunicorn Troubleshooting:
+If you get "gunicorn not found" error, try these start commands in order:
+1. `gunicorn app:app --bind 0.0.0.0:$PORT`
+2. `python -m gunicorn app:app --bind 0.0.0.0:$PORT`
+3. `$HOME/.local/bin/gunicorn app:app --bind 0.0.0.0:$PORT`
 
 ## Environment Variables for Frontend
 
@@ -170,4 +187,6 @@ The build script (`build.sh`) will:
 1. Upgrade pip to latest version
 2. Install setuptools and wheel for building
 3. Install all Python dependencies
-4. Ensure compatibility with Python 3.11
+4. Verify gunicorn installation
+5. Show installed packages for debugging
+6. Ensure compatibility with Python 3.11
