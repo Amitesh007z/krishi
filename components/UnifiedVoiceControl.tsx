@@ -20,7 +20,8 @@ import toast from 'react-hot-toast'
 import SpeechRecognitionService from '@/lib/speechRecognitionService'
 import VoiceVisualizer from './VoiceVisualizer'
 import { getMarketPrices, getWeatherData, getStorageFacilities, getAIRecommendations } from '@/lib/api'
-import { generateAIResponse } from '@/lib/llamafileAI'
+import { generateAIResponse as generateOpenAIResponse } from '@/lib/openaiPrimary'
+import { generateAIResponse as generateLlamafileResponse } from '@/lib/llamafileAI'
 import { processOfflineVoiceCommand } from '@/lib/offlineLLM'
 
 interface VoiceMessage {
@@ -168,12 +169,14 @@ export default function UnifiedVoiceControl({
   useEffect(() => {
     const service = SpeechRecognitionService.getInstance()
     service.setLanguage(selectedLanguage)
+    console.log('Voice control: Language synced to', selectedLanguage)
   }, [selectedLanguage])
 
   // Sync external UI language from the page header
   useEffect(() => {
     if (uiLanguage && uiLanguage !== selectedLanguage) {
       setSelectedLanguage(uiLanguage)
+      console.log('Voice control: UI language changed to', uiLanguage)
     }
   }, [uiLanguage, selectedLanguage])
 
@@ -197,8 +200,8 @@ export default function UnifiedVoiceControl({
         return offline.text
       }
 
-      // Use Llamafile for real AI intelligence
-      const aiResponse = await generateAIResponse({
+      // Use OpenAI first; fallback to Llamafile
+      let aiResponse = await generateOpenAIResponse({
         prompt: userInput,
         language: selectedLanguage,
         context: {
@@ -208,12 +211,23 @@ export default function UnifiedVoiceControl({
           currentTab: 'market'
         }
       })
-      
-      console.log('🧠 Llamafile AI response:', aiResponse)
+      if (!aiResponse?.text) {
+        aiResponse = await generateLlamafileResponse({
+          prompt: userInput,
+          language: selectedLanguage,
+          context: {
+            location: location || 'Punjab',
+            crop: crop || 'wheat',
+            quantity: quantity || '10',
+            currentTab: 'market'
+          }
+        })
+      }
+      console.log('🧠 AI response:', aiResponse)
       return aiResponse.text
       
       } catch (error) {
-      console.error('❌ Error generating Llamafile AI response:', error)
+      console.error('❌ Error generating AI response:', error)
       
       // Fallback response in selected language
       const fallbackText = {
@@ -231,7 +245,10 @@ export default function UnifiedVoiceControl({
       setIsSpeaking(true)
       
       utteranceRef.current = new SpeechSynthesisUtterance(text)
-      utteranceRef.current.lang = selectedLanguage === 'hi' ? 'hi-IN' : selectedLanguage === 'pa' ? 'pa-IN' : 'en-IN'
+      // Set TTS language to match selected language
+      const ttsLang = selectedLanguage === 'hi' ? 'hi-IN' : selectedLanguage === 'pa' ? 'pa-IN' : 'en-IN'
+      utteranceRef.current.lang = ttsLang
+      console.log('Voice control: TTS language set to', ttsLang)
       utteranceRef.current.rate = 0.9
       utteranceRef.current.pitch = 1
       utteranceRef.current.volume = 1
@@ -258,13 +275,15 @@ export default function UnifiedVoiceControl({
 
     if (!isListening) {
       const service = SpeechRecognitionService.getInstance()
+      // Ensure speech recognition uses current selected language
+      service.setLanguage(selectedLanguage)
       const success = service.startRecognition({
                  onStart: () => {
            setIsListening(true)
            setIsListeningActive(true)
            setCurrentTranscript('')
            setVoiceActivity(0.3) // Show initial activity
-           console.log('Voice control: Speech recognition started')
+           console.log('Voice control: Speech recognition started in', selectedLanguage)
            toast.success('🎤 Continuous listening started...')
          },
                  onResult: (transcript, isFinal) => {
@@ -292,6 +311,43 @@ export default function UnifiedVoiceControl({
             
             setMessages(prev => [...prev, userMessage])
             
+            // Short-circuit for navigation commands: perform action only, no AI reply
+            const lower = transcript.toLowerCase()
+            const isNavigation = (
+              lower.includes('go to') ||
+              lower.includes('switch to') ||
+              lower.includes('show') ||
+              lower.includes('open') ||
+              lower.includes('navigate') ||
+              lower.includes('take me to') ||
+              // Hindi
+              lower.includes('जाओ') ||
+              lower.includes('दिखाओ') ||
+              lower.includes('खोलो') ||
+              lower.includes('ले जाओ') ||
+              lower.includes('स्क्रीन बदलो') ||
+              lower.includes('पेज खोलो') ||
+              // Punjabi (Latin)
+              lower.includes('dikhao') ||
+              lower.includes('kholo') ||
+              lower.includes('le jao') ||
+              lower.includes('tab dikhao') ||
+              // Punjabi (Gurmukhi)
+              lower.includes('ਦਿਖਾਓ') ||
+              lower.includes('ਖੋਲੋ') ||
+              lower.includes('ਲੇ ਜਾਓ') ||
+              lower.includes('ਟੈਬ ਦਿਖਾਓ') ||
+              lower.includes('ਟੈਬ ਖੋਲੋ')
+            )
+
+            if (isNavigation) {
+              console.log('Voice control: Navigation command detected, executing without AI reply')
+              onCommandAction(transcript)
+              // Clear transcript after processing
+              setTimeout(() => setCurrentTranscript(''), 1000)
+              return
+            }
+
             // Generate AI response directly from user input
             console.log('Voice control: Generating AI response for:', transcript)
             
@@ -681,6 +737,9 @@ export default function UnifiedVoiceControl({
                    ? 'Click to stop listening'
                    : 'Click the microphone to start listening'
                  }
+               </p>
+               <p className="text-xs text-gray-500 mt-1">
+                 Language: {selectedLanguage === 'hi' ? 'हिंदी' : selectedLanguage === 'pa' ? 'ਪੰਜਾਬੀ' : 'English'}
                </p>
              </div>
           </div>

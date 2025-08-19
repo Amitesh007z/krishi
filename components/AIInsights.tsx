@@ -17,7 +17,8 @@ import {
   BarChart3
 } from 'lucide-react'
 import { agriculturalAI, AIRecommendation, MarketCondition, WeatherCondition } from '@/lib/ai-recommendations'
-import { generateAIResponse } from '@/lib/llamafileAI'
+import { generateAIResponse as generateOpenAIResponse } from '@/lib/openaiPrimary'
+import { generateAIResponse as generateLlamafileResponse } from '@/lib/llamafileAI'
 
 interface AIInsightsProps {
   crop: string
@@ -82,7 +83,7 @@ const AIInsights = ({ crop, location, quantity, marketData, weatherData, selecte
 
           setRecommendations(aiRecommendations)
 
-          // Also fetch a narrative insight from Llamafile
+          // Also fetch a narrative insight from AI provider (OpenAI primary → Llamafile fallback)
           try {
             const llmLang = selectedLanguage === 'hindi' ? 'hi' : selectedLanguage === 'punjabi' ? 'pa' : 'en'
             const prompt = `Provide concise, practical AI insights for the farmer based on the following context.
@@ -99,11 +100,20 @@ Guidelines:
 - Keep it specific to Punjab context and the crop
 - Be brief and high-signal`
 
-            const resp = await generateAIResponse({
+            // Try OpenAI first
+            let resp = await generateOpenAIResponse({
               prompt,
               context: { crop, location, quantity, currentTab: 'AI Insights' },
               language: llmLang
             })
+            if (!resp?.text) {
+              // Fallback to Llamafile
+              resp = await generateLlamafileResponse({
+                prompt,
+                context: { crop, location, quantity, currentTab: 'AI Insights' },
+                language: llmLang
+              })
+            }
             setLlamaInsight(resp.text)
           } catch (e) {
             // ignore, fallback to rule-based only

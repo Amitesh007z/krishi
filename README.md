@@ -163,6 +163,10 @@ NEXT_PUBLIC_DATA_GOV_API_KEY=YOUR_DATA_GOV_API_KEY_HERE
 # Supabase configuration
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+# OpenAI (primary LLM)
+# Prefer setting OPENAI_API_KEY in your hosting provider (Render) dashboard
+OPENAI_API_KEY=your_openai_key
 ```
 
 5. **Run the development server**

@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 import { Toaster } from 'react-hot-toast'
+import LanguageBoundary from '@/components/LanguageBoundary'
 
 const inter = Inter({ subsets: ['latin'] })
 
@@ -25,7 +26,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        {children}
+        {/* Global language provider to enable site-wide translation */}
+        {/* eslint-disable-next-line react/jsx-no-undef */}
+        <LanguageBoundary>
+          {children}
+        </LanguageBoundary>
         <Toaster 
           position="top-right"
           toastOptions={{

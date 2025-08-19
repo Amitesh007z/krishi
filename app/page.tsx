@@ -33,6 +33,7 @@ import PriceChart from '@/components/PriceChart'
 import AIInsights from '@/components/AIInsights'
 import LiveUpdates from '@/components/LiveUpdates'
 import { supabase } from '@/lib/supabaseClient'
+import { useLanguage } from '@/components/LanguageProvider'
 import type { AuthChangeEvent, Session, User } from '@supabase/supabase-js'
 import CropCalendar from '@/components/CropCalendar'
 import FinancialCalculator from '@/components/FinancialCalculator'
@@ -49,8 +50,12 @@ const PUNJAB_DISTRICTS = [
 ]
 
 export default function Home() {
+  const { language, setLanguage, t } = useLanguage()
   const [activeTab, setActiveTab] = useState('market')
-  const [selectedLanguage, setSelectedLanguage] = useState<'english' | 'hindi' | 'punjabi'>('english')
+  const [selectedLanguage, setSelectedLanguage] = useState<'english' | 'hindi' | 'punjabi'>(language === 'hi' ? 'hindi' : language === 'pa' ? 'punjabi' : 'english')
+  useEffect(() => {
+    setSelectedLanguage(language === 'hi' ? 'hindi' : language === 'pa' ? 'punjabi' : 'english')
+  }, [language])
   const [marketTriggerKey, setMarketTriggerKey] = useState<number>(0)
   const [insightsTriggerKey, setInsightsTriggerKey] = useState<number>(0)
   
@@ -199,14 +204,14 @@ export default function Home() {
 
 
   const tabs = [
-    { id: 'market', label: 'Market Intelligence', icon: TrendingUp, color: 'text-primary-600' },
-    { id: 'storage', label: 'Storage Optimization', icon: Warehouse, color: 'text-harvest-600' },
-    { id: 'cooperative', label: 'Cooperative Selling', icon: Users, color: 'text-earth-600' },
-    { id: 'weather', label: 'Weather & Climate', icon: Sun, color: 'text-blue-600' },
-    { id: 'ai', label: 'AI Insights', icon: Brain, color: 'text-purple-600' },
-    { id: 'calendar', label: 'Crop Calendar', icon: Calendar, color: 'text-green-600' },
-    { id: 'finance', label: 'Financial Calculator', icon: DollarSign, color: 'text-yellow-600' },
-    { id: 'supplychain', label: 'Supply Chain', icon: Truck, color: 'text-orange-600' }
+    { id: 'market', label: t('tab.market'), icon: TrendingUp, color: 'text-primary-600' },
+    { id: 'storage', label: t('tab.storage'), icon: Warehouse, color: 'text-harvest-600' },
+    { id: 'cooperative', label: t('tab.cooperative'), icon: Users, color: 'text-earth-600' },
+    { id: 'weather', label: t('tab.weather'), icon: Sun, color: 'text-blue-600' },
+    { id: 'ai', label: t('tab.ai'), icon: Brain, color: 'text-purple-600' },
+    { id: 'calendar', label: t('tab.calendar'), icon: Calendar, color: 'text-green-600' },
+    { id: 'finance', label: t('tab.finance'), icon: DollarSign, color: 'text-yellow-600' },
+    { id: 'supplychain', label: t('tab.supply'), icon: Truck, color: 'text-orange-600' }
   ]
 
   return (
@@ -220,28 +225,28 @@ export default function Home() {
                 <Globe className="w-6 h-6 text-white" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">KrishiAI</h1>
-                <p className="text-sm text-gray-600">Punjab Agricultural Intelligence</p>
+                <h1 className="text-2xl font-bold text-gray-900">{t('app.title')}</h1>
+                <p className="text-sm text-gray-600">{t('app.subtitle')}</p>
               </div>
             </div>
             
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2 text-sm text-green-600">
                 <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span>Voice Assistant Active - Say "Voice Assistant"</span>
+                <span>{t('voice.active')}</span>
               </div>
               {/* Language Selector */}
               <div className="flex items-center space-x-1 text-sm">
                 <button
-                  onClick={() => setSelectedLanguage('english')}
+                  onClick={() => { setSelectedLanguage('english'); setLanguage('en') }}
                   className={`px-2 py-1 rounded ${selectedLanguage === 'english' ? 'bg-gray-200' : 'bg-white border'}`}
                 >EN</button>
                 <button
-                  onClick={() => setSelectedLanguage('hindi')}
+                  onClick={() => { setSelectedLanguage('hindi'); setLanguage('hi') }}
                   className={`px-2 py-1 rounded ${selectedLanguage === 'hindi' ? 'bg-gray-200' : 'bg-white border'}`}
                 >हिं</button>
                 <button
-                  onClick={() => setSelectedLanguage('punjabi')}
+                  onClick={() => { setSelectedLanguage('punjabi'); setLanguage('pa') }}
                   className={`px-2 py-1 rounded ${selectedLanguage === 'punjabi' ? 'bg-gray-200' : 'bg-white border'}`}
                 >ਪੰ</button>
               </div>
@@ -258,13 +263,11 @@ export default function Home() {
           animate={{ opacity: 1, y: 0 }}
           className="card mb-8"
         >
-          <h2 className="text-xl font-semibold text-gray-800 mb-4">Enter Your Details</h2>
+          <h2 className="text-xl font-semibold text-gray-800 mb-4">{t('enter.details')}</h2>
           
                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                 District
-              </label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('field.district')}</label>
               <div className="relative">
                 <input
                   type="text"
@@ -287,7 +290,7 @@ export default function Home() {
             </div>
             
             <div>
-               <label className="block text-sm font-medium text-gray-700 mb-2">Crop (Any)</label>
+               <label className="block text-sm font-medium text-gray-700 mb-2">{t('field.crop.any')}</label>
                <input
                  type="text"
                  placeholder="e.g., Wheat, Rice, Potato, Tomato, Banana..."
@@ -300,7 +303,7 @@ export default function Home() {
              </div>
              
              <div>
-               <label className="block text-sm font-medium text-gray-700 mb-2">Market (Mandi)</label>
+               <label className="block text-sm font-medium text-gray-700 mb-2">{t('field.market')}</label>
                <input
                  type="text"
                  placeholder="e.g., Rajpura, Ghanaur, Amritsar Mandi..."
@@ -313,7 +316,7 @@ export default function Home() {
             </div>
             
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Quantity (tons)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-2">{t('field.quantity.tons')}</label>
               <input
                 type="number"
                 placeholder="Enter quantity"
@@ -339,11 +342,11 @@ export default function Home() {
             >
               <div className="flex items-center space-x-2">
                 <span>🚀</span>
-                <span>Start Market Analysis</span>
+                <span>{t('cta.start')}</span>
               </div>
             </button>
             <p className="text-sm text-gray-500 mt-2">
-              Press Enter in any field or click the button above to start analysis
+              {t('hint.press.enter')}
             </p>
           </div>
 
