@@ -1,27 +1,27 @@
-# Python cache and compiled files
+# Only exclude essential development files
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 *.so
-
-# Virtual environments
+.git/
+.gitignore
+.env
+.venv/
 env/
 venv/
 ENV/
 env.bak/
 venv.bak/
-.venv/
-
-# Development and documentation files
-.git/
-.gitignore
-.env
-*.md
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo
 *.log
+*.md
 README*
-
-# Testing and coverage
 .tox/
 .coverage*
 .cache/
@@ -30,22 +30,10 @@ coverage.xml
 *.cover
 .pytest_cache/
 .hypothesis/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# IDE files
-.vscode/
-.idea/
-*.swp
-*.swo
-
-# Build and deployment files
 build_test.sh
 test_models.py
 
-# Explicitly include these important directories and files
+# Explicitly include models and core files
 !models/
 !models/*.pkl
 !app.py

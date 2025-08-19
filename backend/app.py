@@ -282,15 +282,12 @@ def predict_market_price(input_data):
         logger.error(f"Prediction error: {e}")
         raise Exception(f"ML prediction failed: {e}")
 
-@app.route('/health', methods=['GET'])
+@app.route('/health')
 def health_check():
-    """Health check endpoint"""
+    """Health check endpoint for Render"""
     return jsonify({
         'status': 'healthy',
-        'model_loaded': model is not None,
-        'model_version': model_metadata.get('version', 'unknown'),
-        'model_accuracy': f"{model_metadata.get('performance_metrics', {}).get('r2', 0) * 100:.2f}%",
-        'features_count': len(feature_columns) if feature_columns else 0,
+        'message': 'ML Backend is running',
         'timestamp': datetime.now().isoformat()
     })
 
