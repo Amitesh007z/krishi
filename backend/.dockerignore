@@ -1,10 +1,48 @@
+# Python
 __pycache__
 *.pyc
 *.pyo
 *.pyd
-*.sqlite3
-*.log
-.ipynb_checkpoints
+.Python
+*.so
+
+# Virtual environments
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+
+# Development files
+.git
+.gitignore
 .env
-*.env
-models/*.pkl
+.venv
+*.md
+*.log
+
+# Testing
+.tox
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.pytest_cache
+.hypothesis
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Keep models directory and all .pkl files
+!models/
+!models/*.pkl

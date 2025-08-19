@@ -897,7 +897,8 @@ export const getRealCurrentPrices = async (crop: string, location: string, state
 export const getMLMarketPrediction = async (crop: string, location: string, currentPrice: number) => {
   try {
     // Call the real ML backend API
-    const response = await fetch('http://localhost:5000/predict', {
+    const ML_BACKEND_URL = process.env.NEXT_PUBLIC_ML_BACKEND_URL || 'http://localhost:5000'
+    const response = await fetch(`${ML_BACKEND_URL}/predict`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -954,7 +955,8 @@ export const getMLMarketPredictionWithRealPrices = async (crop: string, location
     console.log(`Real current price for ${crop} in ${market}, ${district}, ${state}: ₹${currentPrice}`)
     
     // Call the real ML backend API with real current price
-    const response = await fetch('http://localhost:5000/predict', {
+    const ML_BACKEND_URL = process.env.NEXT_PUBLIC_ML_BACKEND_URL || 'http://localhost:5000'
+    const response = await fetch(`${ML_BACKEND_URL}/predict`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -996,7 +998,8 @@ export const getMLMarketPredictionWithRealPrices = async (crop: string, location
 // Check ML API health
 export const checkMLAPIHealth = async () => {
   try {
-    const response = await fetch('http://localhost:5000/health', {
+    const ML_BACKEND_URL = process.env.NEXT_PUBLIC_ML_BACKEND_URL || 'http://localhost:5000'
+    const response = await fetch(`${ML_BACKEND_URL}/health`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -1020,7 +1023,8 @@ export const checkMLAPIHealth = async () => {
 // Get ML model performance metrics
 export const getMLModelPerformance = async () => {
   try {
-    const response = await fetch('http://localhost:5000/model-info', {
+    const ML_BACKEND_URL = process.env.NEXT_PUBLIC_ML_BACKEND_URL || 'http://localhost:5000'
+    const response = await fetch(`${ML_BACKEND_URL}/model-info`, {
       method: 'GET',
       headers: {
         'Accept': 'application/json',
@@ -1068,7 +1072,8 @@ export const getMLModelPerformance = async () => {
 // Get available crop-mandi combinations
 export const getAvailableMLCombinations = async () => {
   try {
-    const response = await fetch('http://localhost:5000/available-combinations')
+    const ML_BACKEND_URL = process.env.NEXT_PUBLIC_ML_BACKEND_URL || 'http://localhost:5000'
+    const response = await fetch(`${ML_BACKEND_URL}/available-combinations`)
     if (!response.ok) {
       throw new Error(`ML API error: ${response.status}`)
     }
