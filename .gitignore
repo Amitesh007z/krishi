@@ -29,8 +29,8 @@ env.bak/
 venv.bak/
 
 # ML Models
-*.pkl
-*.gguf
+
+.gguf
 
 
 # IDE
