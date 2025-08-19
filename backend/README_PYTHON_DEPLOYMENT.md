@@ -9,6 +9,7 @@
 1. Ensure your backend folder contains:
    - `app.py` (Flask application)
    - `requirements.txt` (Python dependencies)
+   - `runtime.txt` (Python version specification)
    - `models/` directory with all .pkl files
 
 2. **IMPORTANT**: Verify model files exist locally:
@@ -38,7 +39,7 @@
    - **Region**: Choose closest to your users
 
 4. **Build & Deploy Settings**
-   - **Build Command**: `pip install -r requirements.txt`
+   - **Build Command**: `chmod +x build.sh && ./build.sh`
    - **Start Command**: `gunicorn app:app --bind 0.0.0.0:$PORT`
 
 5. **Environment Variables** (Optional)
@@ -92,7 +93,7 @@ const response = await fetch(`${ML_BACKEND_URL}/predict`, {
 
 2. **Build Fails**
    - Check requirements.txt for compatibility
-   - Ensure Python version is compatible
+   - Ensure Python version is compatible (3.11)
    - Check for missing dependencies
 
 3. **Service Unavailable**
@@ -155,3 +156,18 @@ NEXT_PUBLIC_ML_BACKEND_URL=https://your-app-name.onrender.com
 - Direct file system access
 - No copy/volume mounting issues
 - Models directory accessible immediately
+
+## Python Version Compatibility
+
+✅ **Python 3.11**: Fully compatible with all ML packages
+✅ **Python 3.10**: Compatible with most packages
+✅ **Python 3.9**: Compatible with all packages
+❌ **Python 3.13**: Not yet compatible with XGBoost/scikit-learn
+
+## Build Process
+
+The build script (`build.sh`) will:
+1. Upgrade pip to latest version
+2. Install setuptools and wheel for building
+3. Install all Python dependencies
+4. Ensure compatibility with Python 3.11
