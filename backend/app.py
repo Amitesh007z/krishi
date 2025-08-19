@@ -320,32 +320,73 @@ def predict():
 @app.route('/model-info', methods=['GET'])
 def model_info():
     """Get model information"""
-    if not model:
-        return jsonify({'error': 'ML model not loaded'}), 500
-    
-    return jsonify({
-        'model_type': 'XGBoost',
-        'version': model_metadata.get('version', '2.0_fixed'),
-        'training_date': model_metadata.get('training_date', '2025-03-12'),
-        'features_count': len(feature_columns) if feature_columns else 0,
-        'accuracy': f"{model_metadata.get('performance_metrics', {}).get('r2', 0.8953) * 100:.2f}%",
-        'mae': model_metadata.get('performance_metrics', {}).get('mae', 256.39),
-        'rmse': model_metadata.get('performance_metrics', {}).get('rmse', 446.96),
-        'mape': model_metadata.get('performance_metrics', {}).get('mape', 12.54),
-        'available_combinations': model_metadata.get('available_combinations', [])
-    })
+    try:
+        if not model:
+            return jsonify({'error': 'ML model not loaded'}), 500
+        
+        if not model_metadata:
+            return jsonify({'error': 'Model metadata not loaded'}), 500
+        
+        if not feature_columns:
+            return jsonify({'error': 'Feature columns not loaded'}), 500
+        
+        return jsonify({
+            'model_type': 'XGBoost',
+            'version': model_metadata.get('version', '2.0_fixed'),
+            'training_date': model_metadata.get('training_date', '2025-03-12'),
+            'features_count': len(feature_columns) if feature_columns else 0,
+            'accuracy': f"{model_metadata.get('performance_metrics', {}).get('r2', 0.8953) * 100:.2f}%",
+            'mae': model_metadata.get('performance_metrics', {}).get('mae', 256.39),
+            'rmse': model_metadata.get('performance_metrics', {}).get('rmse', 446.96),
+            'mape': model_metadata.get('performance_metrics', {}).get('mape', 12.54),
+            'available_combinations': model_metadata.get('available_combinations', [])
+        })
+    except Exception as e:
+        logger.error(f"Model info error: {e}")
+        return jsonify({'error': f'Failed to get model info: {str(e)}'}), 500
 
 @app.route('/available-combinations', methods=['GET'])
 def available_combinations():
     """Get available crop-mandi combinations"""
-    if not model:
-        return jsonify({'error': 'ML model not loaded'}), 500
-    
-    combinations = model_metadata.get('available_combinations', [])
-    return jsonify({
-        'combinations': combinations,
-        'total_count': len(combinations)
-    })
+    try:
+        if not model:
+            return jsonify({'error': 'ML model not loaded'}), 500
+        
+        if not model_metadata:
+            return jsonify({'error': 'Model metadata not loaded'}), 500
+        
+        combinations = model_metadata.get('available_combinations', [])
+        return jsonify({
+            'combinations': combinations,
+            'total_count': len(combinations)
+        })
+    except Exception as e:
+        logger.error(f"Available combinations error: {e}")
+        return jsonify({'error': f'Failed to get combinations: {str(e)}'}), 500
+
+@app.route('/debug', methods=['GET'])
+def debug_info():
+    """Debug endpoint to check model loading status"""
+    try:
+        debug_info = {
+            'model_loaded': model is not None,
+            'encoders_loaded': len(encoders) > 0,
+            'feature_columns_loaded': len(feature_columns) > 0,
+            'metadata_loaded': len(model_metadata) > 0,
+            'current_directory': os.getcwd(),
+            'models_directory_exists': os.path.exists('models'),
+            'models_directory_contents': os.listdir('models') if os.path.exists('models') else [],
+            'python_version': f"{os.sys.version_info.major}.{os.sys.version_info.minor}.{os.sys.version_info.micro}"
+        }
+        
+        if model_metadata:
+            debug_info['metadata_keys'] = list(model_metadata.keys())
+            debug_info['performance_metrics'] = model_metadata.get('performance_metrics', {})
+        
+        return jsonify(debug_info)
+    except Exception as e:
+        logger.error(f"Debug endpoint error: {e}")
+        return jsonify({'error': f'Debug endpoint failed: {str(e)}'}), 500
 
 if __name__ == '__main__':
     # Load model on startup
