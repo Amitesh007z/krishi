@@ -13,21 +13,24 @@ RUN apt-get update && apt-get install -y \
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy all files from the backend directory
-COPY . .
-
-# Verify the models directory and files exist
-RUN echo "=== Checking models directory ===" && \
-    ls -la && \
-    echo "=== Models directory contents ===" && \
+# Copy models directory first and verify it exists
+COPY models/ ./models/
+RUN echo "=== Models directory copied ===" && \
     ls -la models/ && \
-    echo "=== Checking for .pkl files ===" && \
-    find . -name "*.pkl" -exec echo "Found: {}" \; && \
-    echo "=== Verifying model files ===" && \
+    echo "=== Model files found ===" && \
+    find models/ -name "*.pkl" -exec echo "Found: {}" \;
+
+# Copy the rest of the application files
+COPY app.py .
+COPY export_model.py .
+
+# Final verification that all required files exist
+RUN echo "=== Final verification ===" && \
     test -f models/market_price_model.pkl && echo "✅ market_price_model.pkl exists" && \
     test -f models/encoders.pkl && echo "✅ encoders.pkl exists" && \
     test -f models/feature_columns.pkl && echo "✅ feature_columns.pkl exists" && \
-    test -f models/model_metadata.pkl && echo "✅ model_metadata.pkl exists"
+    test -f models/model_metadata.pkl && echo "✅ model_metadata.pkl exists" && \
+    echo "=== All model files verified successfully ==="
 
 # Expose port
 EXPOSE 5000

@@ -1,9 +1,8 @@
-# Python
-__pycache__
+# Python cache and compiled files
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
-.Python
 *.so
 
 # Virtual environments
@@ -14,35 +13,41 @@ env.bak/
 venv.bak/
 .venv/
 
-# Development files
-.git
+# Development and documentation files
+.git/
 .gitignore
 .env
-.venv
 *.md
 *.log
+README*
 
-# Testing
-.tox
-.coverage
-.coverage.*
-.cache
+# Testing and coverage
+.tox/
+.coverage*
+.cache/
 nosetests.xml
 coverage.xml
 *.cover
-.pytest_cache
-.hypothesis
+.pytest_cache/
+.hypothesis/
 
 # OS files
 .DS_Store
 Thumbs.db
 
-# IDE
+# IDE files
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# Keep models directory and all .pkl files
+# Build and deployment files
+build_test.sh
+test_models.py
+
+# Explicitly include these important directories and files
 !models/
 !models/*.pkl
+!app.py
+!requirements.txt
+!export_model.py
