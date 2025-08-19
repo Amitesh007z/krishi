@@ -21,62 +21,91 @@ feature_columns = []
 model_metadata = {}
 
 def load_model():
-    """Load the trained XGBoost model and encoders"""
+    """Load the trained ML model and related files"""
     global model, encoders, feature_columns, model_metadata
     
     try:
-        # Debug: List current directory and models directory
-        import os
-        logger.info(f"Current working directory: {os.getcwd()}")
-        logger.info(f"Current directory contents: {os.listdir('.')}")
+        # Fix path resolution for Render deployment
+        BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+        MODELS_DIR = os.path.join(BASE_DIR, "models")
         
-        if os.path.exists('models'):
-            logger.info(f"Models directory exists. Contents: {os.listdir('models')}")
-        else:
-            logger.error("Models directory does not exist!")
+        logger.info(f"🔍 Loading models from directory: {MODELS_DIR}")
+        logger.info(f"🔍 Current working directory: {os.getcwd()}")
+        logger.info(f"🔍 Base directory: {BASE_DIR}")
+        
+        # Check if models directory exists
+        if not os.path.exists(MODELS_DIR):
+            logger.error(f"❌ Models directory does not exist: {MODELS_DIR}")
             return False
         
-        # Load the trained model
-        model_path = os.path.join(os.path.dirname(__file__), 'models', 'market_price_model.pkl')
-        logger.info(f"Looking for model at: {model_path}")
-        logger.info(f"Model file exists: {os.path.exists(model_path)}")
+        # List contents of models directory
+        models_contents = os.listdir(MODELS_DIR)
+        logger.info(f"📁 Models directory contents: {models_contents}")
         
+        # Define model file paths
+        model_path = os.path.join(MODELS_DIR, "market_price_model.pkl")
+        encoders_path = os.path.join(MODELS_DIR, "encoders.pkl")
+        features_path = os.path.join(MODELS_DIR, "feature_columns.pkl")
+        metadata_path = os.path.join(MODELS_DIR, "model_metadata.pkl")
+        
+        # Check if all required files exist
+        required_files = [model_path, encoders_path, features_path, metadata_path]
+        for file_path in required_files:
+            if not os.path.exists(file_path):
+                logger.error(f"❌ Required file not found: {file_path}")
+                return False
+            else:
+                logger.info(f"✅ Found file: {file_path}")
+        
+        # Load the main model
+        logger.info(f"🤖 Loading XGBoost model from: {model_path}")
         with open(model_path, 'rb') as f:
             model = pickle.load(f)
+        logger.info(f"✅ XGBoost model loaded successfully")
         
         # Load encoders
-        encoders_path = os.path.join(os.path.dirname(__file__), 'models', 'encoders.pkl')
-        logger.info(f"Looking for encoders at: {encoders_path}")
+        logger.info(f"🔧 Loading encoders from: {encoders_path}")
         with open(encoders_path, 'rb') as f:
             encoders = pickle.load(f)
+        logger.info(f"✅ Encoders loaded successfully")
         
         # Load feature columns
-        features_path = os.path.join(os.path.dirname(__file__), 'models', 'feature_columns.pkl')
-        logger.info(f"Looking for features at: {features_path}")
+        logger.info(f"📊 Loading feature columns from: {features_path}")
         with open(features_path, 'rb') as f:
             feature_columns = pickle.load(f)
+        logger.info(f"✅ Feature columns loaded successfully")
         
         # Load model metadata
-        metadata_path = os.path.join(os.path.dirname(__file__), 'models', 'model_metadata.pkl')
-        logger.info(f"Looking for metadata at: {metadata_path}")
+        logger.info(f"📋 Loading model metadata from: {metadata_path}")
         with open(metadata_path, 'rb') as f:
             model_metadata = pickle.load(f)
+        logger.info(f"✅ Model metadata loaded successfully")
         
-        logger.info("ML Model loaded successfully")
-        logger.info(f"Model features: {len(feature_columns)} features")
-        logger.info(f"Model R2 Score: {model_metadata.get('performance_metrics', {}).get('r2', 'N/A')}")
-        logger.info(f"Model MAE: Rs.{model_metadata.get('performance_metrics', {}).get('mae', 'N/A')}")
-        return True
-        
+        # Verify all components loaded
+        if model is not None and len(encoders) > 0 and len(feature_columns) > 0 and len(model_metadata) > 0:
+            logger.info("🎉 All model components loaded successfully!")
+            logger.info(f"📊 Model type: {type(model).__name__}")
+            logger.info(f"🔧 Encoders count: {len(encoders)}")
+            logger.info(f"📊 Feature columns count: {len(feature_columns)}")
+            logger.info(f"📋 Metadata keys: {list(model_metadata.keys())}")
+            return True
+        else:
+            logger.error("❌ Some model components failed to load properly")
+            return False
+            
     except FileNotFoundError as e:
-        logger.error(f"Model files not found: {e}")
-        logger.error(f"Current directory: {os.getcwd()}")
-        logger.error(f"Directory contents: {os.listdir('.')}")
-        if os.path.exists('models'):
-            logger.error(f"Models directory contents: {os.listdir('models')}")
+        logger.error(f"❌ Model files not found: {e}")
+        logger.error(f"🔍 Current directory: {os.getcwd()}")
+        logger.error(f"🔍 Base directory: {BASE_DIR}")
+        logger.error(f"🔍 Models directory: {MODELS_DIR}")
+        if os.path.exists(MODELS_DIR):
+            logger.error(f"🔍 Models directory contents: {os.listdir(MODELS_DIR)}")
         return False
     except Exception as e:
-        logger.error(f"Error loading model: {e}")
+        logger.error(f"❌ Error loading model: {e}")
+        logger.error(f"🔍 Error type: {type(e).__name__}")
+        import traceback
+        logger.error(f"🔍 Traceback: {traceback.format_exc()}")
         return False
 
 def encode_categorical_features(input_data):
