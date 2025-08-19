@@ -8,9 +8,10 @@
 
 1. Ensure your backend folder contains:
    - `app.py` (Flask application)
-   - `requirements.txt` (Python dependencies)
+   - `requirements.txt` (Python 3.13+ compatible)
+   - `requirements-dev.txt` (Python 3.9-3.11 compatible)
+   - `deploy_render.py` (Smart deployment script)
    - `runtime.txt` (Python version specification)
-   - `build.sh` (build script)
    - `models/` directory with all .pkl files
 
 2. **IMPORTANT**: Verify model files exist locally:
@@ -40,11 +41,11 @@
    - **Region**: Choose closest to your users
 
 4. **Build & Deploy Settings**
-   - **Build Command**: `chmod +x build.sh && ./build.sh`
+   - **Build Command**: `python deploy_render.py`
    - **Start Command**: Choose one of these options:
      - **Option 1**: `gunicorn app:app --bind 0.0.0.0:$PORT`
      - **Option 2**: `python -m gunicorn app:app --bind 0.0.0.0:$PORT`
-     - **Option 3**: `$HOME/.local/bin/gunicorn app:app --bind 0.0.0.0:$PORT`
+     - **Option 3**: `python start.py` (if gunicorn fails)
 
 5. **Environment Variables** (Optional)
    - `FLASK_ENV`: `production`
@@ -86,32 +87,52 @@ const response = await fetch(`${ML_BACKEND_URL}/predict`, {
 ✅ **Easier Debugging**: Standard Python errors
 ✅ **Better Logs**: Clear Python stack traces
 
+## Smart Deployment Features
+
+🚀 **Automatic Python Version Detection**:
+- Detects Python version automatically
+- Uses appropriate requirements file
+- Ensures compatibility with any Python version
+
+🔧 **Intelligent Package Management**:
+- Python 3.13+: Uses latest compatible packages
+- Python 3.9-3.11: Uses stable, tested packages
+- Automatic fallback if packages fail
+
+📦 **Dual Requirements Files**:
+- `requirements.txt`: Python 3.13+ compatible (latest versions)
+- `requirements-dev.txt`: Python 3.9-3.11 compatible (stable versions)
+
 ## Troubleshooting
 
 ### Common Issues:
 
 1. **Gunicorn Not Found** ✅ **FIXED**
-   - ✅ Updated build script to verify gunicorn installation
-   - ✅ Added fallback gunicorn installation
+   - ✅ Smart deployment script handles package installation
    - ✅ Multiple start command options provided
-   - Try different start commands if one fails
+   - ✅ Automatic package verification
 
-2. **Model Loading Failed**
+2. **Module Not Found (Flask, etc.)** ✅ **FIXED**
+   - ✅ Smart deployment script installs correct packages
+   - ✅ Automatic requirements file selection
+   - ✅ Package import verification
+
+3. **Model Loading Failed**
    - Check if all .pkl files are in the models/ directory
    - Verify file paths in app.py
    - Check Render logs for Python errors
 
-3. **Build Fails**
-   - Check requirements.txt for compatibility
-   - Ensure Python version is compatible (3.11)
-   - Check for missing dependencies
+4. **Build Fails**
+   - Smart deployment script provides detailed error messages
+   - Automatic package compatibility detection
+   - Fallback to stable versions if needed
 
-4. **Service Unavailable**
+5. **Service Unavailable**
    - Check Render logs for errors
    - Verify health check endpoint works
    - Look for Python import errors
 
-5. **CORS Issues**
+6. **CORS Issues**
    - Ensure CORS is properly configured in app.py
    - Check if frontend URL is allowed
 
@@ -122,11 +143,13 @@ const response = await fetch(`${ML_BACKEND_URL}/predict`, {
 - Look for import or file not found errors
 - Look for gunicorn-related errors
 
-### Gunicorn Troubleshooting:
-If you get "gunicorn not found" error, try these start commands in order:
-1. `gunicorn app:app --bind 0.0.0.0:$PORT`
-2. `python -m gunicorn app:app --bind 0.0.0.0:$PORT`
-3. `$HOME/.local/bin/gunicorn app:app --bind 0.0.0.0:$PORT`
+### Smart Deployment Logs:
+The `deploy_render.py` script will show:
+- Python version detection
+- Requirements file selection
+- Package installation progress
+- Import verification results
+- Complete package list
 
 ## Environment Variables for Frontend
 
@@ -176,17 +199,19 @@ NEXT_PUBLIC_ML_BACKEND_URL=https://your-app-name.onrender.com
 
 ## Python Version Compatibility
 
-✅ **Python 3.11**: Fully compatible with all ML packages
-✅ **Python 3.10**: Compatible with most packages
-✅ **Python 3.9**: Compatible with all packages
-❌ **Python 3.13**: Not yet compatible with XGBoost/scikit-learn
+✅ **Python 3.13+**: Uses latest compatible packages
+✅ **Python 3.11**: Uses stable packages
+✅ **Python 3.10**: Uses stable packages
+✅ **Python 3.9**: Uses stable packages
 
-## Build Process
+## Smart Build Process
 
-The build script (`build.sh`) will:
-1. Upgrade pip to latest version
-2. Install setuptools and wheel for building
-3. Install all Python dependencies
-4. Verify gunicorn installation
-5. Show installed packages for debugging
-6. Ensure compatibility with Python 3.11
+The `deploy_render.py` script will:
+1. Detect Python version automatically
+2. Select appropriate requirements file
+3. Upgrade pip and build tools
+4. Install dependencies with version compatibility
+5. Verify all package imports
+6. Test app import
+7. Show complete package list
+8. Provide detailed error reporting
