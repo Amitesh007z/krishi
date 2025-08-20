@@ -148,7 +148,7 @@ def load_ml_models():
         
         # Load the main model
         try:
-            model_path = 'models/xgboost_model.pkl'
+            model_path = 'models/market_price_model.pkl'
             if os.path.exists(model_path):
                 with open(model_path, 'rb') as f:
                     model = pickle.load(f)
