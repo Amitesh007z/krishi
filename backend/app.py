@@ -9,12 +9,14 @@ from flask import Flask, request, jsonify
 from flask_cors import CORS
 
 # Flask 3.x compatibility check
+# Flask 3.x compatibility check
 try:
-    from flask import Flask
-    print(f"✅ Flask imported successfully: {Flask.__version__}")
+    import flask
+    print(f"✅ Flask imported successfully: {flask.__version__}")
 except Exception as e:
     print(f"❌ Flask import failed: {e}")
     sys.exit(1)
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
