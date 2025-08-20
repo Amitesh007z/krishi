@@ -66,11 +66,19 @@ CORS(app, resources={
 # Add CORS headers to all responses
 @app.after_request
 def after_request(response):
-    response.headers.add('Access-Control-Allow-Origin', '*')
-    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With')
-    response.headers.add('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
-    response.headers.add('Access-Control-Allow-Credentials', 'true')
+    origin = request.headers.get('Origin')
+    allowed_origins = [
+        "https://krishiai-latest.onrender.com",
+        "http://localhost:3000",
+        "http://localhost:5000"
+    ]
+    if origin in allowed_origins:
+        response.headers["Access-Control-Allow-Origin"] = origin
+    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
+    response.headers["Access-Control-Allow-Methods"] = "GET, PUT, POST, DELETE, OPTIONS"
+    response.headers["Access-Control-Allow-Credentials"] = "true"
     return response
+
 
 # Global variables for model and encoders
 model = None
@@ -569,21 +577,6 @@ def debug_info():
         logger.error(f"Debug info error: {e}")
         return jsonify({'error': f'Failed to get debug info: {str(e)}'}), 500
 
-if __name__ == '__main__':
-    # Load model on startup
-    if load_ml_models():
-        logger.info("Starting ML Market Prediction API...")
-        logger.info(f"Model loaded with {len(feature_columns)} features")
-        logger.info(f"Model accuracy: {model_metadata.get('performance_metrics', {}).get('r2', 0) * 100:.2f}%")
-        
-        # Get port from environment variable (Render sets PORT)
-        port = int(os.environ.get('PORT', 5000))
-        debug = os.environ.get('FLASK_ENV') == 'development'
-        
-        app.run(host='0.0.0.0', port=port, debug=debug)
-    else:
-        logger.error("Failed to load model. API cannot start.")
-        exit(1)
 
 # For production deployment (Render), load models when app starts
 @app.route('/')
@@ -606,3 +599,20 @@ def ping():
         'status': 'ok',
         'timestamp': datetime.now().isoformat()
     })
+
+
+if __name__ == '__main__':
+    # Load model on startup
+    if load_ml_models():
+        logger.info("Starting ML Market Prediction API...")
+        logger.info(f"Model loaded with {len(feature_columns)} features")
+        logger.info(f"Model accuracy: {model_metadata.get('performance_metrics', {}).get('r2', 0) * 100:.2f}%")
+        
+        # Get port from environment variable (Render sets PORT)
+        port = int(os.environ.get('PORT', 5000))
+        debug = os.environ.get('FLASK_ENV') == 'development'
+        
+        app.run(host='0.0.0.0', port=port, debug=debug)
+    else:
+        logger.error("Failed to load model. API cannot start.")
+        exit(1)
