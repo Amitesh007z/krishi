@@ -330,14 +330,37 @@ def predict_market_price(input_data):
         logger.error(f"Prediction error: {e}")
         raise Exception(f"ML prediction failed: {e}")
 
-@app.route('/health')
+@app.route('/health', methods=['GET', 'OPTIONS'])
 def health_check():
-    """Health check endpoint for Render"""
-    return jsonify({
-        'status': 'healthy',
-        'message': 'ML Backend is running',
-        'timestamp': datetime.now().isoformat()
-    })
+    """Health check endpoint with CORS support"""
+    if request.method == 'OPTIONS':
+        # Handle CORS preflight request
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
+    
+    # Handle actual GET request
+    try:
+        health_status = {
+            'status': 'healthy',
+            'message': 'ML Backend is running',
+            'timestamp': datetime.now().isoformat(),
+            'model_loaded': model is not None,
+            'encoders_loaded': len(encoders) > 0 if encoders else False,
+            'feature_columns_loaded': len(feature_columns) > 0 if feature_columns else False,
+            'metadata_loaded': len(model_metadata) > 0 if model_metadata else False
+        }
+        return jsonify(health_status)
+    except Exception as e:
+        logger.error(f"Health check error: {e}")
+        return jsonify({
+            'status': 'unhealthy',
+            'error': str(e),
+            'timestamp': datetime.now().isoformat()
+        }), 500
 
 @app.route('/predict', methods=['POST', 'OPTIONS'])
 def predict():
@@ -445,19 +468,29 @@ def available_combinations():
         logger.error(f"Available combinations error: {e}")
         return jsonify({'error': f'Failed to get combinations: {str(e)}'}), 500
 
-@app.route('/debug', methods=['GET'])
+@app.route('/debug', methods=['GET', 'OPTIONS'])
 def debug_info():
-    """Debug endpoint to check model loading status"""
+    """Debug endpoint to check model loading status with CORS support"""
+    if request.method == 'OPTIONS':
+        # Handle CORS preflight request
+        response = jsonify({'status': 'ok'})
+        response.headers.add('Access-Control-Allow-Origin', '*')
+        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With')
+        response.headers.add('Access-Control-Allow-Methods', 'GET,OPTIONS')
+        response.headers.add('Access-Control-Allow-Credentials', 'true')
+        return response
+    
+    # Handle actual GET request
     try:
         debug_info = {
             'model_loaded': model is not None,
-            'encoders_loaded': len(encoders) > 0,
-            'feature_columns_loaded': len(feature_columns) > 0,
-            'metadata_loaded': len(model_metadata) > 0,
+            'encoders_loaded': len(encoders) > 0 if encoders else False,
+            'feature_columns_loaded': len(feature_columns) > 0 if feature_columns else False,
+            'metadata_loaded': len(model_metadata) > 0 if model_metadata else False,
             'current_directory': os.getcwd(),
             'models_directory_exists': os.path.exists('models'),
             'models_directory_contents': os.listdir('models') if os.path.exists('models') else [],
-            'python_version': f"{os.sys.version_info.major}.{os.sys.version_info.minor}.{os.sys.version_info.micro}"
+            'python_version': f"{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}"
         }
         
         if model_metadata:
@@ -466,8 +499,8 @@ def debug_info():
         
         return jsonify(debug_info)
     except Exception as e:
-        logger.error(f"Debug endpoint error: {e}")
-        return jsonify({'error': f'Debug endpoint failed: {str(e)}'}), 500
+        logger.error(f"Debug info error: {e}")
+        return jsonify({'error': f'Failed to get debug info: {str(e)}'}), 500
 
 if __name__ == '__main__':
     # Load model on startup
