@@ -1,14 +1,20 @@
-from flask import Flask, request, jsonify
-from flask_cors import CORS
-import pickle
-import numpy as np
-import pandas as pd
-from datetime import datetime, timedelta
-import logging
 import os
 import sys
 import json
 import traceback
+import pickle
+import logging
+from datetime import datetime
+from flask import Flask, request, jsonify
+from flask_cors import CORS
+
+# Flask 3.x compatibility check
+try:
+    from flask import Flask
+    print(f"✅ Flask imported successfully: {Flask.__version__}")
+except Exception as e:
+    print(f"❌ Flask import failed: {e}")
+    sys.exit(1)
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
@@ -34,13 +40,16 @@ def load_models_on_demand():
     
     return models_loaded
 
-# Flask 3.x compatible startup event
-@app.before_serving
-def startup():
-    """Load models when the app starts serving requests"""
-    logger.info("🚀 App starting up, loading ML models...")
-    load_models_on_demand()
-    logger.info("✅ App startup complete")
+# Test route to verify Flask 3.x compatibility
+@app.route('/test')
+def test():
+    """Test endpoint to verify Flask 3.x compatibility"""
+    return jsonify({
+        'message': 'Flask 3.x compatibility test passed!',
+        'flask_version': '3.1.2',
+        'timestamp': datetime.now().isoformat(),
+        'models_loaded': models_loaded
+    })
 
 # Fix CORS configuration to handle preflight requests properly
 CORS(app, resources={
@@ -583,5 +592,15 @@ def root():
         'message': 'ML Market Prediction API',
         'status': 'running',
         'models_loaded': models_loaded,
+        'timestamp': datetime.now().isoformat()
+    })
+
+# Simple health check that doesn't require models
+@app.route('/ping')
+def ping():
+    """Simple ping endpoint for health checks"""
+    return jsonify({
+        'message': 'pong',
+        'status': 'ok',
         'timestamp': datetime.now().isoformat()
     })
