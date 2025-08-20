@@ -63,23 +63,6 @@ CORS(app, resources={
     }
 })
 
-# Add CORS headers to all responses
-@app.after_request
-def after_request(response):
-    origin = request.headers.get('Origin')
-    allowed_origins = [
-        "https://krishiai-latest.onrender.com",
-        "http://localhost:3000",
-        "http://localhost:5000"
-    ]
-    if origin in allowed_origins:
-        response.headers["Access-Control-Allow-Origin"] = origin
-    response.headers["Access-Control-Allow-Headers"] = "Content-Type, Authorization, X-Requested-With"
-    response.headers["Access-Control-Allow-Methods"] = "GET, PUT, POST, DELETE, OPTIONS"
-    response.headers["Access-Control-Allow-Credentials"] = "true"
-    return response
-
-
 # Global variables for model and encoders
 model = None
 encoders = {}
@@ -387,14 +370,7 @@ def predict_market_price(input_data):
 @app.route('/health', methods=['GET', 'OPTIONS'])
 def health_check():
     """Health check endpoint with CORS support"""
-    if request.method == 'OPTIONS':
-        # Handle CORS preflight request
-        response = jsonify({'status': 'ok'})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,OPTIONS')
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-        return response
+    
     
     # Handle actual GET request
     try:
@@ -419,14 +395,7 @@ def health_check():
 @app.route('/predict', methods=['POST', 'OPTIONS'])
 def predict():
     """Handle both POST requests and OPTIONS preflight requests"""
-    if request.method == 'OPTIONS':
-        # Handle CORS preflight request
-        response = jsonify({'status': 'ok'})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With')
-        response.headers.add('Access-Control-Allow-Methods', 'POST,OPTIONS')
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-        return response
+    
     
     # Check if models are loaded
     if not model or not encoders or not feature_columns or not model_metadata:
@@ -478,14 +447,7 @@ def predict():
 @app.route('/model-info', methods=['GET', 'OPTIONS'])
 def model_info():
     """Get model information with CORS support"""
-    if request.method == 'OPTIONS':
-        # Handle CORS preflight request
-        response = jsonify({'status': 'ok'})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,OPTIONS')
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-        return response
+    
     
     # Check if models are loaded
     if not model or not encoders or not feature_columns or not model_metadata:
@@ -546,14 +508,7 @@ def available_combinations():
 @app.route('/debug', methods=['GET', 'OPTIONS'])
 def debug_info():
     """Debug endpoint to check model loading status with CORS support"""
-    if request.method == 'OPTIONS':
-        # Handle CORS preflight request
-        response = jsonify({'status': 'ok'})
-        response.headers.add('Access-Control-Allow-Origin', '*')
-        response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,X-Requested-With')
-        response.headers.add('Access-Control-Allow-Methods', 'GET,OPTIONS')
-        response.headers.add('Access-Control-Allow-Credentials', 'true')
-        return response
+    
     
     # Handle actual GET request
     try:
