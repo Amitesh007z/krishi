@@ -98,10 +98,10 @@ def load_ml_models():
         
         # Load model metadata first
         try:
-            metadata_path = 'models/model_metadata.json'
+            metadata_path = 'models/model_metadata.pkl'
             if os.path.exists(metadata_path):
-                with open(metadata_path, 'r') as f:
-                    model_metadata = json.load(f)
+                with open(metadata_path, 'rb') as f:
+                    model_metadata = pickle.load(f)
                 logger.info(f"Model metadata loaded successfully: {len(model_metadata)} keys")
             else:
                 logger.error(f"Model metadata file not found at: {metadata_path}")
@@ -112,10 +112,10 @@ def load_ml_models():
         
         # Load feature columns
         try:
-            feature_path = 'models/feature_columns.json'
+            feature_path = 'models/feature_columns.pkl'
             if os.path.exists(feature_path):
-                with open(feature_path, 'r') as f:
-                    feature_columns = json.load(f)
+                with open(feature_path, 'rb') as f:
+                    feature_columns = pickle.load(f)
                 logger.info(f"Feature columns loaded successfully: {len(feature_columns)} columns")
             else:
                 logger.error(f"Feature columns file not found at: {feature_path}")
