@@ -17,16 +17,30 @@ logger = logging.getLogger(__name__)
 # Initialize Flask app
 app = Flask(__name__)
 
-# Load models on app startup
-@app.before_first_request
-def initialize_models():
-    """Load ML models before first request"""
-    logger.info("🔄 Initializing ML models...")
-    if not load_ml_models():
-        logger.error("❌ Failed to load ML models during initialization")
-        logger.error("API will not function properly")
-    else:
-        logger.info("✅ ML models initialized successfully")
+# Global flag to track if models are loaded
+models_loaded = False
+
+def load_models_on_demand():
+    """Load ML models when needed"""
+    global models_loaded, model, encoders, feature_columns, model_metadata
+    
+    if not models_loaded:
+        logger.info("🔄 Loading ML models on demand...")
+        if load_ml_models():
+            models_loaded = True
+            logger.info("✅ ML models loaded successfully")
+        else:
+            logger.error("❌ Failed to load ML models")
+    
+    return models_loaded
+
+# Flask 3.x compatible startup event
+@app.before_serving
+def startup():
+    """Load models when the app starts serving requests"""
+    logger.info("🚀 App starting up, loading ML models...")
+    load_models_on_demand()
+    logger.info("✅ App startup complete")
 
 # Fix CORS configuration to handle preflight requests properly
 CORS(app, resources={
@@ -398,7 +412,7 @@ def predict():
     # Check if models are loaded
     if not model or not encoders or not feature_columns or not model_metadata:
         logger.error("❌ ML models not loaded. Attempting to reload...")
-        if not load_ml_models():
+        if not load_models_on_demand():
             logger.error("❌ Failed to reload ML models")
             return jsonify({
                 'error': 'ML models not available. Please try again later.',
@@ -457,7 +471,7 @@ def model_info():
     # Check if models are loaded
     if not model or not encoders or not feature_columns or not model_metadata:
         logger.error("❌ ML models not loaded. Attempting to reload...")
-        if not load_ml_models():
+        if not load_models_on_demand():
             logger.error("❌ Failed to reload ML models")
             return jsonify({
                 'error': 'ML models not available. Please try again later.',
@@ -559,3 +573,15 @@ if __name__ == '__main__':
     else:
         logger.error("Failed to load model. API cannot start.")
         exit(1)
+
+# For production deployment (Render), load models when app starts
+@app.route('/')
+def root():
+    """Root endpoint that triggers model loading"""
+    load_models_on_demand()
+    return jsonify({
+        'message': 'ML Market Prediction API',
+        'status': 'running',
+        'models_loaded': models_loaded,
+        'timestamp': datetime.now().isoformat()
+    })
