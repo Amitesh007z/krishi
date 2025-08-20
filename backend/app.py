@@ -7,12 +7,26 @@ from datetime import datetime, timedelta
 import logging
 import os
 import sys
+import json
+import traceback
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+# Initialize Flask app
 app = Flask(__name__)
+
+# Load models on app startup
+@app.before_first_request
+def initialize_models():
+    """Load ML models before first request"""
+    logger.info("🔄 Initializing ML models...")
+    if not load_ml_models():
+        logger.error("❌ Failed to load ML models during initialization")
+        logger.error("API will not function properly")
+    else:
+        logger.info("✅ ML models initialized successfully")
 
 # Fix CORS configuration to handle preflight requests properly
 CORS(app, resources={
@@ -39,92 +53,99 @@ encoders = {}
 feature_columns = []
 model_metadata = {}
 
-def load_model():
-    """Load the trained ML model and related files"""
+def load_ml_models():
+    """Load ML models and related components with comprehensive error handling"""
     global model, encoders, feature_columns, model_metadata
     
     try:
-        # Fix path resolution for Render deployment
-        BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-        MODELS_DIR = os.path.join(BASE_DIR, "models")
-        
-        logger.info(f"🔍 Loading models from directory: {MODELS_DIR}")
-        logger.info(f"🔍 Current working directory: {os.getcwd()}")
-        logger.info(f"🔍 Base directory: {BASE_DIR}")
+        logger.info("Starting ML model loading process...")
         
         # Check if models directory exists
-        if not os.path.exists(MODELS_DIR):
-            logger.error(f"❌ Models directory does not exist: {MODELS_DIR}")
+        if not os.path.exists('models'):
+            logger.error("Models directory does not exist!")
+            logger.error(f"Current working directory: {os.getcwd()}")
+            logger.error(f"Directory contents: {os.listdir('.')}")
             return False
         
-        # List contents of models directory
-        models_contents = os.listdir(MODELS_DIR)
-        logger.info(f"📁 Models directory contents: {models_contents}")
+        logger.info("Models directory found, checking contents...")
+        model_files = os.listdir('models')
+        logger.info(f"Model files found: {model_files}")
         
-        # Define model file paths
-        model_path = os.path.join(MODELS_DIR, "market_price_model.pkl")
-        encoders_path = os.path.join(MODELS_DIR, "encoders.pkl")
-        features_path = os.path.join(MODELS_DIR, "feature_columns.pkl")
-        metadata_path = os.path.join(MODELS_DIR, "model_metadata.pkl")
-        
-        # Check if all required files exist
-        required_files = [model_path, encoders_path, features_path, metadata_path]
-        for file_path in required_files:
-            if not os.path.exists(file_path):
-                logger.error(f"❌ Required file not found: {file_path}")
-                return False
+        # Load model metadata first
+        try:
+            metadata_path = 'models/model_metadata.json'
+            if os.path.exists(metadata_path):
+                with open(metadata_path, 'r') as f:
+                    model_metadata = json.load(f)
+                logger.info(f"Model metadata loaded successfully: {len(model_metadata)} keys")
             else:
-                logger.info(f"✅ Found file: {file_path}")
-        
-        # Load the main model
-        logger.info(f"🤖 Loading XGBoost model from: {model_path}")
-        with open(model_path, 'rb') as f:
-            model = pickle.load(f)
-        logger.info(f"✅ XGBoost model loaded successfully")
-        
-        # Load encoders
-        logger.info(f"🔧 Loading encoders from: {encoders_path}")
-        with open(encoders_path, 'rb') as f:
-            encoders = pickle.load(f)
-        logger.info(f"✅ Encoders loaded successfully")
+                logger.error(f"Model metadata file not found at: {metadata_path}")
+                return False
+        except Exception as e:
+            logger.error(f"Failed to load model metadata: {e}")
+            return False
         
         # Load feature columns
-        logger.info(f"📊 Loading feature columns from: {features_path}")
-        with open(features_path, 'rb') as f:
-            feature_columns = pickle.load(f)
-        logger.info(f"✅ Feature columns loaded successfully")
+        try:
+            feature_path = 'models/feature_columns.json'
+            if os.path.exists(feature_path):
+                with open(feature_path, 'r') as f:
+                    feature_columns = json.load(f)
+                logger.info(f"Feature columns loaded successfully: {len(feature_columns)} columns")
+            else:
+                logger.error(f"Feature columns file not found at: {feature_path}")
+                return False
+        except Exception as e:
+            logger.error(f"Failed to load feature columns: {e}")
+            return False
         
-        # Load model metadata
-        logger.info(f"📋 Loading model metadata from: {metadata_path}")
-        with open(metadata_path, 'rb') as f:
-            model_metadata = pickle.load(f)
-        logger.info(f"✅ Model metadata loaded successfully")
+        # Load encoders
+        try:
+            encoders_path = 'models/encoders.pkl'
+            if os.path.exists(encoders_path):
+                with open(encoders_path, 'rb') as f:
+                    encoders = pickle.load(f)
+                logger.info(f"Encoders loaded successfully: {len(encoders)} encoders")
+            else:
+                logger.error(f"Encoders file not found at: {encoders_path}")
+                return False
+        except Exception as e:
+            logger.error(f"Failed to load encoders: {e}")
+            return False
         
-        # Verify all components loaded
-        if model is not None and len(encoders) > 0 and len(feature_columns) > 0 and len(model_metadata) > 0:
-            logger.info("🎉 All model components loaded successfully!")
-            logger.info(f"📊 Model type: {type(model).__name__}")
-            logger.info(f"🔧 Encoders count: {len(encoders)}")
-            logger.info(f"📊 Feature columns count: {len(feature_columns)}")
-            logger.info(f"📋 Metadata keys: {list(model_metadata.keys())}")
+        # Load the main model
+        try:
+            model_path = 'models/xgboost_model.pkl'
+            if os.path.exists(model_path):
+                with open(model_path, 'rb') as f:
+                    model = pickle.load(f)
+                logger.info("XGBoost model loaded successfully")
+            else:
+                logger.error(f"Model file not found at: {model_path}")
+                return False
+        except Exception as e:
+            logger.error(f"Failed to load XGBoost model: {e}")
+            return False
+        
+        # Verify all components are loaded
+        if model is not None and encoders and feature_columns and model_metadata:
+            logger.info("✅ All ML components loaded successfully!")
+            logger.info(f"Model type: {type(model)}")
+            logger.info(f"Encoders count: {len(encoders)}")
+            logger.info(f"Feature columns count: {len(feature_columns)}")
+            logger.info(f"Metadata keys: {list(model_metadata.keys())}")
             return True
         else:
-            logger.error("❌ Some model components failed to load properly")
+            logger.error("❌ Not all components loaded successfully")
+            logger.error(f"Model: {model is not None}")
+            logger.error(f"Encoders: {bool(encoders)}")
+            logger.error(f"Feature columns: {bool(feature_columns)}")
+            logger.error(f"Metadata: {bool(model_metadata)}")
             return False
             
-    except FileNotFoundError as e:
-        logger.error(f"❌ Model files not found: {e}")
-        logger.error(f"🔍 Current directory: {os.getcwd()}")
-        logger.error(f"🔍 Base directory: {BASE_DIR}")
-        logger.error(f"🔍 Models directory: {MODELS_DIR}")
-        if os.path.exists(MODELS_DIR):
-            logger.error(f"🔍 Models directory contents: {os.listdir(MODELS_DIR)}")
-        return False
     except Exception as e:
-        logger.error(f"❌ Error loading model: {e}")
-        logger.error(f"🔍 Error type: {type(e).__name__}")
-        import traceback
-        logger.error(f"🔍 Traceback: {traceback.format_exc()}")
+        logger.error(f"Critical error during model loading: {e}")
+        logger.error(f"Traceback: {traceback.format_exc()}")
         return False
 
 def encode_categorical_features(input_data):
@@ -374,11 +395,20 @@ def predict():
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response
     
+    # Check if models are loaded
+    if not model or not encoders or not feature_columns or not model_metadata:
+        logger.error("❌ ML models not loaded. Attempting to reload...")
+        if not load_ml_models():
+            logger.error("❌ Failed to reload ML models")
+            return jsonify({
+                'error': 'ML models not available. Please try again later.',
+                'status': 'model_not_loaded'
+            }), 503
+        else:
+            logger.info("✅ ML models reloaded successfully")
+    
     # Handle actual POST request
     try:
-        if not model:
-            return jsonify({'error': 'ML model not loaded'}), 500
-        
         data = request.get_json()
         if not data:
             return jsonify({'error': 'No data provided'}), 400
@@ -423,6 +453,18 @@ def model_info():
         response.headers.add('Access-Control-Allow-Methods', 'GET,OPTIONS')
         response.headers.add('Access-Control-Allow-Credentials', 'true')
         return response
+    
+    # Check if models are loaded
+    if not model or not encoders or not feature_columns or not model_metadata:
+        logger.error("❌ ML models not loaded. Attempting to reload...")
+        if not load_ml_models():
+            logger.error("❌ Failed to reload ML models")
+            return jsonify({
+                'error': 'ML models not available. Please try again later.',
+                'status': 'model_not_loaded'
+            }), 503
+        else:
+            logger.info("✅ ML models reloaded successfully")
     
     # Handle actual GET request
     try:
@@ -504,7 +546,7 @@ def debug_info():
 
 if __name__ == '__main__':
     # Load model on startup
-    if load_model():
+    if load_ml_models():
         logger.info("Starting ML Market Prediction API...")
         logger.info(f"Model loaded with {len(feature_columns)} features")
         logger.info(f"Model accuracy: {model_metadata.get('performance_metrics', {}).get('r2', 0) * 100:.2f}%")
