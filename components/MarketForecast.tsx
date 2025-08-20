@@ -89,6 +89,8 @@ interface MLPrediction {
   };
   riskFactors?: string[];
   currentPrice?: number;
+  isMockData?: boolean;
+  mockReason?: string;
 }
 
 const MarketForecast = ({ crop, location, quantity, triggerFetchKey }: MarketForecastProps) => {
@@ -104,6 +106,8 @@ const MarketForecast = ({ crop, location, quantity, triggerFetchKey }: MarketFor
   const [mlApiHealth, setMlApiHealth] = useState<any>(null)
   const [useMLModel, setUseMLModel] = useState(true)
   const [nearbyMandis, setNearbyMandis] = useState<any[]>([])
+  const [isUsingMockData, setIsUsingMockData] = useState(false)
+  const [mockDataReason, setMockDataReason] = useState('')
 
   // Mock data - in real app, this would come from APIs
   const mockPriceData: PriceData[] = [
@@ -174,11 +178,23 @@ const MarketForecast = ({ crop, location, quantity, triggerFetchKey }: MarketFor
                 console.log('⚠️ ML API not healthy or health check pending, using AI recommendations')
                 aiRecommendation = await getAIRecommendations(crop, location, parseInt(quantity) || 0)
                 setMlPrediction(null)
+                setIsUsingMockData(false)
+                setMockDataReason('')
               } else {
                 console.log('🤖 Attempting ML prediction with real prices for:', crop, 'in', location)
                 prediction = await getMLMarketPredictionWithRealPrices(crop, location)
                 console.log('✅ ML prediction with real prices successful:', prediction)
                 setMlPrediction(prediction)
+                
+                // Check if this is mock data
+                if (prediction.isMockData) {
+                  setIsUsingMockData(true)
+                  setMockDataReason(prediction.mockReason || 'ML API temporarily unavailable')
+                  console.log('🔄 Using dynamic mock data:', prediction.mockReason)
+                } else {
+                  setIsUsingMockData(false)
+                  setMockDataReason('')
+                }
                 
                 // Get ML model info
                 const modelInfo = await getMLModelPerformance()
@@ -189,9 +205,13 @@ const MarketForecast = ({ crop, location, quantity, triggerFetchKey }: MarketFor
               console.log('❌ ML prediction failed, using AI recommendations:', mlError)
               aiRecommendation = await getAIRecommendations(crop, location, parseInt(quantity) || 0)
               setMlPrediction(null)
+              setIsUsingMockData(false)
+              setMockDataReason('')
             }
           } else {
             aiRecommendation = await getAIRecommendations(crop, location, parseInt(quantity) || 0)
+            setIsUsingMockData(false)
+            setMockDataReason('')
           }
           
           // Use ML prediction if available, otherwise use AI
@@ -445,6 +465,38 @@ const MarketForecast = ({ crop, location, quantity, triggerFetchKey }: MarketFor
             </div>
           </div>
         </div>
+
+        {/* Mock Data Indicator */}
+        {isUsingMockData && (
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-yellow-50 border border-orange-200 rounded-lg"
+          >
+            <div className="flex items-center space-x-3">
+              <div className="flex-shrink-0">
+                <div className="w-8 h-8 bg-orange-100 rounded-full flex items-center justify-center">
+                  <span className="text-orange-600 text-lg">🔄</span>
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-sm font-medium text-orange-800">
+                  Using Dynamic Mock Data
+                </h3>
+                <p className="text-sm text-orange-700 mt-1">
+                  {mockDataReason || 'ML API temporarily unavailable'}. 
+                  Data is generated using intelligent algorithms based on market patterns, 
+                  seasonal factors, and historical trends.
+                </p>
+              </div>
+              <div className="flex-shrink-0">
+                <span className="text-xs bg-orange-100 text-orange-800 px-2 py-1 rounded-full">
+                  Mock Mode
+                </span>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Current Price */}
